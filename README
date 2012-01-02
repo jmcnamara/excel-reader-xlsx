@@ -1,0 +1,37 @@
+NAME
+
+    Excel::Reader::XLSX - Read data from an Excel 2007+/XLSX format file.
+
+DESCRIPTION
+
+    The Excel::Reader::XLSX module can be used to read data from an 
+    Excel 2007+/XLSX format file.
+
+
+
+SYNOPSIS
+
+    Currently there is only skeleton code here. Working code will be
+    released to CPAN in version 0.01.
+
+
+INSTALLATION
+
+    Use the standard Unix style installation.
+
+        Unzip and untar the module as follows:
+
+            tar -zxvf Excel-Reader-XLSX-0.xx.tar.gz
+
+        The module can be installed using the standard Perl procedure:
+
+            perl Makefile.PL
+            make
+            make test
+            make install    # As sudo/root
+
+
+
+AUTHOR
+
+    John McNamara (jmcnamara@cpan.org)
