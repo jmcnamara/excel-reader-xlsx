@@ -6,7 +6,7 @@ package Excel::Reader::XLSX;
 #
 # Excel::Reader::XLSX - Read data from an Excel 2007+/XLSX format file.
 #
-# Copyright 2000-2012, John McNamara, jmcnamara@cpan.org
+# Copyright 2012, John McNamara, jmcnamara@cpan.org
 #
 # Documentation after __END__
 #
@@ -85,7 +85,7 @@ John McNamara jmcnamara@cpan.org
 
 =head1 COPYRIGHT
 
-Copyright MM-MMXII, John McNamara.
+Copyright MMXII, John McNamara.
 
 All Rights Reserved. This module is free software. It may be used, redistributed and/or modified under the same terms as Perl itself.
 
