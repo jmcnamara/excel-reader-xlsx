@@ -191,9 +191,17 @@ sub _read_rich_string {
     my $string      = '';
     my $rich_string = '';
 
+    # Get the nodes for the text runs <r>.
     for my $run_node ( $node->childNodes() ) {
-        $string      .= $run_node->textContent();
+
+        next unless $run_node->nodeName eq 'r';
         $rich_string .= $run_node->toString();
+
+       # Get the nodes for the text <t>.
+        for my $text_node ( $run_node->childNodes() ) {
+            next unless $text_node->nodeName eq 't';
+            $string .= $text_node->textContent();
+        }
     }
 
     return ( $string, $rich_string );

@@ -33,7 +33,7 @@ $reader->_read_all_nodes();
 #
 $caption = " \tSharedStrings: _count";
 
-$expected = 7;
+$expected = 3;
 
 $got = $reader->{_count};
 
@@ -60,7 +60,7 @@ _is_deep_diff( $got, $expected, $caption );
 #
 $caption = " \tSharedStrings: _strings";
 
-$expected = [ 'neptune', 'mars', 'venus' ];
+$expected = [ 'abcdefg', '   abcdefg', 'abcdefg   ' ];
 
 $got = $reader->{_strings};
 
@@ -68,14 +68,14 @@ _is_deep_diff( $got, $expected, $caption );
 
 __DATA__
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="7" uniqueCount="3">
+<sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="3" uniqueCount="3">
   <si>
-    <t>neptune</t>
+    <t>abcdefg</t>
   </si>
   <si>
-    <t>mars</t>
+    <t xml:space="preserve">   abcdefg</t>
   </si>
   <si>
-    <t>venus</t>
+    <t xml:space="preserve">abcdefg   </t>
   </si>
 </sst>
