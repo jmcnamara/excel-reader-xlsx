@@ -1,8 +1,8 @@
-package Excel::Reader::XLSX::Package::ContentTypes;
+package Excel::Reader::XLSX::Package::Relationship;
 
 ###############################################################################
 #
-# ContentTypes - A class for reading the Excel XLSX ContentTypes.xml file.
+# Relationship - A class for reading the Excel XLSX Rels file.
 #
 # Used in conjunction with Excel::Reader::XLSX
 #
@@ -35,8 +35,8 @@ sub new {
     my $class = shift;
 
     my $self = {
-        _reader       => undef,
-        _files        => {},
+        _reader => undef,
+        _rels   => {},
     };
 
     bless $self, $class;
@@ -108,7 +108,7 @@ sub _read_filehandle {
 #
 # _read_all_nodes()
 #
-# Read all the nodes of a ContentTypes.xml file using an XML::LibXML::Reader
+# Read all the nodes of a Relationship.xml file using an XML::LibXML::Reader
 # instance.
 #
 sub _read_all_nodes {
@@ -125,7 +125,7 @@ sub _read_all_nodes {
 #
 # _read_node()
 #
-# Callback function to read the <Types> attributes of the ContentTypes file.
+# Callback function to read the <Types> attributes of the Relationship file.
 #
 sub _read_node {
 
@@ -133,58 +133,34 @@ sub _read_node {
     my $node = shift;
 
     # Only read the Override nodes.
-    return unless $node->name eq 'Override';
+    return unless $node->name eq 'Relationship';
 
+    my $id          = $node->getAttribute( 'Id' );
+    my $type        = $node->getAttribute( 'Type' );
+    my $target      = $node->getAttribute( 'Target' );
+    my $target_mode = $node->getAttribute( 'TargetMode' );
 
-    my $part_name    = $node->getAttribute('PartName');
-    my $content_type = $node->getAttribute('ContentType');
-
-
-    if ( $part_name =~ /app\.xml$/ ) {
-        $self->{_files}->{_app} = $part_name;
-        return;
-    }
-
-    if ( $part_name =~ /core\.xml$/ ) {
-        $self->{_files}->{_core} = $part_name;
-        return;
-    }
-
-    if ( $part_name =~ /sharedStrings\.xml$/ ) {
-        $self->{_files}->{_shared_strings} = $part_name;
-        return;
-    }
-
-    if ( $part_name =~ /styles\.xml$/ ) {
-        $self->{_files}->{_styles} = $part_name;
-        return;
-    }
-
-    if ( $part_name =~ /workbook\.xml$/ ) {
-        $self->{_files}->{_workbook} = $part_name;
-        return;
-    }
-
-    if ( $part_name =~ /sheet\d+\.xml$/ ) {
-        push @{ $self->{_files}->{_worksheets} }, $part_name;
-        return;
-    }
+    $self->{_rels}->{$id} = {
+        _type        => $type,
+        _target      => $target,
+        _target_mode => $target_mode,
+    };
 }
 
 
 ###############################################################################
 #
-# _get_files()
+# _get_relationships()
 #
 # TODO
 #
-sub _get_files {
+sub _get_relationships {
 
     my $self = shift;
 
-    return %{$self->{_files}};
-
+    return %{ $self->{_rels} };
 }
+
 
 
 
@@ -198,7 +174,7 @@ __END__
 
 =head1 NAME
 
-ContentTypes - A class for reading the Excel XLSX ContentTypes.xml file.
+Relationship - A class for reading the Excel XLSX Rels file.
 
 =head1 SYNOPSIS
 

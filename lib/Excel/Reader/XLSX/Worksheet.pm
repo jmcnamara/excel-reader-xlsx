@@ -1,8 +1,8 @@
-package Excel::Reader::XLSX::Package::ContentTypes;
+package Excel::Reader::XLSX::Worksheet;
 
 ###############################################################################
 #
-# ContentTypes - A class for reading the Excel XLSX ContentTypes.xml file.
+# Worksheet - A class for reading the Excel XLSX sheet.xml file.
 #
 # Used in conjunction with Excel::Reader::XLSX
 #
@@ -19,9 +19,13 @@ use warnings;
 use Exporter;
 use Carp;
 use XML::LibXML::Reader;
+use Excel::Reader::XLSX::Package::Relationships;
 
 our @ISA     = qw(Exporter);
 our $VERSION = '0.00';
+
+our $FULL_DEPTH  = 1;
+our $RICH_STRING = 1;
 
 
 ###############################################################################
@@ -34,12 +38,18 @@ sub new {
 
     my $class = shift;
 
+    my $package_dir = shift;
+    my %files       = @_;
+
     my $self = {
-        _reader       => undef,
-        _files        => {},
+        _reader          => undef,
+        _package_dir     => $package_dir,
     };
 
     bless $self, $class;
+
+
+    #$self->_set_relationships();
 
     return $self;
 }
@@ -68,7 +78,7 @@ sub _read_file {
 #
 # _read_string()
 #
-# Create an XML::LibXML::Reader instance from a string. Used mainly for
+# Create an XML::LibXML::Reader instance from a string. Used mainly for 
 # testing.
 #
 sub _read_string {
@@ -108,7 +118,7 @@ sub _read_filehandle {
 #
 # _read_all_nodes()
 #
-# Read all the nodes of a ContentTypes.xml file using an XML::LibXML::Reader
+# Read all the nodes of a worksheet.xml file using an XML::LibXML::Reader
 # instance.
 #
 sub _read_all_nodes {
@@ -120,71 +130,66 @@ sub _read_all_nodes {
     }
 }
 
-
-##############################################################################
+###############################################################################
 #
-# _read_node()
+# next_row()
 #
-# Callback function to read the <Types> attributes of the ContentTypes file.
+# TODO
 #
-sub _read_node {
+sub next_row {
 
     my $self = shift;
-    my $node = shift;
 
-    # Only read the Override nodes.
-    return unless $node->name eq 'Override';
+    return $self->{_reader}->nextElement('row');
 
 
-    my $part_name    = $node->getAttribute('PartName');
-    my $content_type = $node->getAttribute('ContentType');
 
-
-    if ( $part_name =~ /app\.xml$/ ) {
-        $self->{_files}->{_app} = $part_name;
-        return;
-    }
-
-    if ( $part_name =~ /core\.xml$/ ) {
-        $self->{_files}->{_core} = $part_name;
-        return;
-    }
-
-    if ( $part_name =~ /sharedStrings\.xml$/ ) {
-        $self->{_files}->{_shared_strings} = $part_name;
-        return;
-    }
-
-    if ( $part_name =~ /styles\.xml$/ ) {
-        $self->{_files}->{_styles} = $part_name;
-        return;
-    }
-
-    if ( $part_name =~ /workbook\.xml$/ ) {
-        $self->{_files}->{_workbook} = $part_name;
-        return;
-    }
-
-    if ( $part_name =~ /sheet\d+\.xml$/ ) {
-        push @{ $self->{_files}->{_worksheets} }, $part_name;
-        return;
-    }
 }
 
 
 ###############################################################################
 #
-# _get_files()
+# next_cell()
 #
 # TODO
 #
-sub _get_files {
+sub next_cell {
 
     my $self = shift;
 
-    return %{$self->{_files}};
+    my $has_node = $self->{_reader}->read();
 
+    return unless $has_node;
+
+    my $node = $self->{_reader};
+
+    return if $node->name eq 'row';
+    #return if $node->name ne 'c';
+
+    my $padding = '  ' x $self->{_reader}->depth();
+
+    print ">>     ", $padding, $node->name, "\n";
+
+    return 1;
 }
+
+
+
+
+###############################################################################
+#
+# name()
+#
+# TODO
+#
+sub name {
+
+    my $self = shift;
+
+    return $self->{_name};
+}
+
+
 
 
 
@@ -198,7 +203,7 @@ __END__
 
 =head1 NAME
 
-ContentTypes - A class for reading the Excel XLSX ContentTypes.xml file.
+Worksheet - A class for reading the Excel XLSX sheet.xml file.
 
 =head1 SYNOPSIS
 

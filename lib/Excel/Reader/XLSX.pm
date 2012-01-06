@@ -15,11 +15,18 @@ use 5.008002;
 use strict;
 use warnings;
 use Exporter;
-
-use strict;
+use Archive::Zip qw(:ERROR_CODES);
+use File::Temp   qw(tempdir);
 use Excel::Reader::XLSX::Workbook;
+use Excel::Reader::XLSX::Package::ContentTypes;
+use Excel::Reader::XLSX::Package::SharedStrings;
 
-our @ISA     = qw(Excel::Reader::XLSX::Workbook Exporter);
+
+
+# Suppress Archive::Zip error reporting. We will handle errors.
+Archive::Zip::setErrorHandler( sub { } );
+
+our @ISA     = qw(Exporter);
 our $VERSION = '0.00';
 
 
@@ -30,13 +37,90 @@ our $VERSION = '0.00';
 sub new {
 
     my $class = shift;
-    my $self  = Excel::Reader::XLSX::Workbook->new( @_ );
 
-    # Check for file creation failures before re-blessing
-    bless $self, $class if defined $self;
+    my $self = {
+        _reader       => undef,
+        _files        => {},
+        _tempdir      => undef,
+    };
+
+    bless $self, $class;
 
     return $self;
 }
+
+###############################################################################
+#
+# read_file()
+#
+# TODO
+#
+sub read_file {
+
+    my $self     = shift;
+    my $filename = shift;
+
+
+    my $tempdir = tempdir( CLEANUP => 1, DIR => $self->{_tempdir} );
+
+    # Add a Unix directory separator to the end of the temp dir name.
+    # This is required by Archive::Zip.
+    $tempdir .= '/' if $tempdir !~ m{/$};
+
+    print "$tempdir\n";
+
+
+    my $zipfile = Archive::Zip->new();
+
+    my $status = $zipfile->read( $filename );
+
+    die "Read of $filename failed\n" if $status != AZ_OK;
+
+    $zipfile->extractTree( '', $tempdir );
+
+
+    my $content_types = Excel::Reader::XLSX::Package::ContentTypes->new();
+
+    $content_types->_read_file( $tempdir . '[Content_Types].xml' );
+    $content_types->_read_all_nodes();
+
+    my %files = $content_types->_get_files();
+
+
+    my $shared_strings = Excel::Reader::XLSX::Package::SharedStrings->new();
+
+    $shared_strings->_read_file( $tempdir . $files{_shared_strings} );
+    $shared_strings->_read_all_nodes();
+
+    #my %files = $content_types->_get_files();
+
+
+    my $workbook = Excel::Reader::XLSX::Workbook->new( $tempdir, %files );
+
+    $workbook->_read_file( $tempdir . $files{_workbook} );
+    $workbook->_read_all_nodes();
+
+
+
+    # use Data::Dumper::Perltidy;
+    # print Dumper \%files;
+    # print Dumper $shared_strings->{_strings};
+    # print Dumper $workbook->{_worksheet_names};
+    # print Dumper $workbook;
+
+
+
+    $self->{_files}          = \%files;
+    $self->{_shared_strings} = $shared_strings;
+    $self->{_package_dir}    = $tempdir;
+    $self->{_zipfile}        = $zipfile;
+
+    return $workbook;
+
+}
+
+
+
 
 
 1;

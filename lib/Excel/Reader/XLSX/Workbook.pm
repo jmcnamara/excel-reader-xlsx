@@ -1,8 +1,8 @@
-package Excel::Reader::XLSX::Package::ContentTypes;
+package Excel::Reader::XLSX::Workbook;
 
 ###############################################################################
 #
-# ContentTypes - A class for reading the Excel XLSX ContentTypes.xml file.
+# Workbook - A class for reading the Excel XLSX workbook.xml file.
 #
 # Used in conjunction with Excel::Reader::XLSX
 #
@@ -19,9 +19,14 @@ use warnings;
 use Exporter;
 use Carp;
 use XML::LibXML::Reader;
+use Excel::Reader::XLSX::Worksheet;
+use Excel::Reader::XLSX::Package::Relationships;
 
 our @ISA     = qw(Exporter);
 our $VERSION = '0.00';
+
+our $FULL_DEPTH  = 1;
+our $RICH_STRING = 1;
 
 
 ###############################################################################
@@ -34,12 +39,21 @@ sub new {
 
     my $class = shift;
 
+    my $package_dir = shift;
+    my %files       = @_;
+
     my $self = {
-        _reader       => undef,
-        _files        => {},
+        _reader          => undef,
+        _package_dir     => $package_dir,
+        _files           => \%files,
+        _worksheets      => undef,
+        _worksheet_attributes => [],
     };
 
     bless $self, $class;
+
+
+    $self->_set_relationships();
 
     return $self;
 }
@@ -68,7 +82,7 @@ sub _read_file {
 #
 # _read_string()
 #
-# Create an XML::LibXML::Reader instance from a string. Used mainly for
+# Create an XML::LibXML::Reader instance from a string. Used mainly for 
 # testing.
 #
 sub _read_string {
@@ -108,7 +122,7 @@ sub _read_filehandle {
 #
 # _read_all_nodes()
 #
-# Read all the nodes of a ContentTypes.xml file using an XML::LibXML::Reader
+# Read all the nodes of a workbook.xml file using an XML::LibXML::Reader
 # instance.
 #
 sub _read_all_nodes {
@@ -121,70 +135,97 @@ sub _read_all_nodes {
 }
 
 
+###############################################################################
+#
+# _set_relationships()
+#
+# TODO
+#
+sub _set_relationships {
+
+    my $self     = shift;
+    my $filename = shift;
+
+    my $rels_file = Excel::Reader::XLSX::Package::Relationship->new();
+
+    $rels_file->_read_file(
+        $self->{_package_dir} . 'xl/_rels/workbook.xml.rels' );
+
+    $rels_file->_read_all_nodes();
+
+    my %rels = $rels_file->_get_relationships();
+    $self->{_rels} = \%rels;
+}
+
+
+
+
+
 ##############################################################################
 #
 # _read_node()
 #
-# Callback function to read the <Types> attributes of the ContentTypes file.
+# Callback function to read the nodes of the Workbook.xml file.
 #
 sub _read_node {
 
     my $self = shift;
     my $node = shift;
 
-    # Only read the Override nodes.
-    return unless $node->name eq 'Override';
+    # Only process the start elements.
+    return unless $node->nodeType() == XML_READER_TYPE_ELEMENT;
 
 
-    my $part_name    = $node->getAttribute('PartName');
-    my $content_type = $node->getAttribute('ContentType');
+    if ( $node->name eq 'sheet' ) {
+
+        my $name     = $node->getAttribute( 'name' );
+        my $sheet_id = $node->getAttribute( 'sheetId' );
+        my $rel_id   = $node->getAttribute( 'r:id' );
+
+        my $filename = $self->{_rels}->{$rel_id}->{_target};
 
 
-    if ( $part_name =~ /app\.xml$/ ) {
-        $self->{_files}->{_app} = $part_name;
-        return;
-    }
-
-    if ( $part_name =~ /core\.xml$/ ) {
-        $self->{_files}->{_core} = $part_name;
-        return;
-    }
-
-    if ( $part_name =~ /sharedStrings\.xml$/ ) {
-        $self->{_files}->{_shared_strings} = $part_name;
-        return;
-    }
-
-    if ( $part_name =~ /styles\.xml$/ ) {
-        $self->{_files}->{_styles} = $part_name;
-        return;
-    }
-
-    if ( $part_name =~ /workbook\.xml$/ ) {
-        $self->{_files}->{_workbook} = $part_name;
-        return;
-    }
-
-    if ( $part_name =~ /sheet\d+\.xml$/ ) {
-        push @{ $self->{_files}->{_worksheets} }, $part_name;
-        return;
+          push @{ $self->{_worksheet_attributes} },
+          {
+            _name     => $name,
+            _sheet_id => $sheet_id,
+            _rel_id   => $rel_id,
+            _filename => $filename,
+          };
     }
 }
-
 
 ###############################################################################
 #
-# _get_files()
+# worksheets()
 #
 # TODO
 #
-sub _get_files {
+sub worksheets {
 
     my $self = shift;
 
-    return %{$self->{_files}};
+    if ( defined $self->{_worksheets} ) {
+        return @{ $self->{_worksheets} };
+    }
 
+    for my $attribute ( @{ $self->{_worksheet_attributes} } ) {
+        print ">> $attribute->{_filename}\n";
+
+        my $worksheet = Excel::Reader::XLSX::Worksheet->new();
+
+        $worksheet->{_name} = $attribute->{_name};
+
+
+        $worksheet->_read_file(
+            $self->{_package_dir} . 'xl/'. $attribute->{_filename} );
+
+        push @{ $self->{_worksheets} }, $worksheet;
+    }
+
+    return @{ $self->{_worksheets} };
 }
+
 
 
 
@@ -198,7 +239,7 @@ __END__
 
 =head1 NAME
 
-ContentTypes - A class for reading the Excel XLSX ContentTypes.xml file.
+Workbook - A class for reading the Excel XLSX workbook.xml file.
 
 =head1 SYNOPSIS
 
