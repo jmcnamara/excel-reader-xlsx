@@ -78,7 +78,7 @@ sub _read_file {
 #
 # _read_string()
 #
-# Create an XML::LibXML::Reader instance from a string. Used mainly for 
+# Create an XML::LibXML::Reader instance from a string. Used mainly for
 # testing.
 #
 sub _read_string {
@@ -125,6 +125,8 @@ sub _read_all_nodes {
 
     my $self = shift;
 
+    # TODO remove.
+
     while ( $self->{_reader}->read() ) {
         $self->_read_node( $self->{_reader} );
     }
@@ -140,10 +142,15 @@ sub next_row {
 
     my $self = shift;
 
-    return $self->{_reader}->nextElement('row');
+    my $has_node = $self->{_reader}->nextElement( 'row' );
+
+    if ( $has_node ) {
+        $self->{_row_is_empty} = $self->{_reader}->isEmptyElement();
+        $self->{_end_of_row}   = 0;
+    }
 
 
-
+    return $has_node;
 }
 
 
@@ -156,21 +163,68 @@ sub next_row {
 sub next_cell {
 
     my $self = shift;
+    my $cell;
+    my $node;
+    my $cell_start = 0;
 
-    my $has_node = $self->{_reader}->read();
+    return if $self->{_row_is_empty};
+    return if $self->{_end_of_row};
 
-    return unless $has_node;
 
-    my $node = $self->{_reader};
 
-    return if $node->name eq 'row';
-    #return if $node->name ne 'c';
+    while ( !$cell_start ) {
 
-    my $padding = '  ' x $self->{_reader}->depth();
+        return if !$self->{_reader}->read();
+        $node = $self->{_reader};
 
-    print ">>     ", $padding, $node->name, "\n";
+        if (   $node->name() eq 'c'
+            && $node->nodeType() == XML_READER_TYPE_ELEMENT )
+        {
+            $cell_start = 1;
+            last;
+        }
 
-    return 1;
+        if ( $node->name eq 'row' ) {
+            $self->{_end_of_row} = 1;
+            return;
+        }
+
+
+    }
+
+
+    my $range = $node->getAttribute( 'r' );
+    return unless $range;
+
+    ( $cell->{_row}, $cell->{_col} ) = _range_to_rowcol( $range );
+
+
+    my $type = $node->getAttribute( 't' ) || '';
+
+    $cell->{_type} = $type;
+
+
+    my $cell_node = $node->copyCurrentNode( $FULL_DEPTH );
+
+
+    # Read the cell <c> child nodes.
+    for my $child_node ( $cell_node->childNodes() ) {
+
+        if ( $child_node->nodeName() eq 'v' ) {
+            $cell->{_value}     = $child_node->textContent();
+            $cell->{_has_value} = 1;
+        }
+        elsif ( $child_node->nodeName() eq 'f' ) {
+            $cell->{_formula}     = $child_node->textContent();
+            $cell->{_has_formula} = 1;
+        }
+    }
+
+
+    use Data::Dumper::Perltidy;
+    print Dumper $cell;
+
+    return $cell;
 }
 
 
@@ -189,6 +243,42 @@ sub name {
     return $self->{_name};
 }
 
+
+
+
+
+###############################################################################
+#
+# _range_to_rowcol($range)
+#
+# TODO.
+#
+sub _range_to_rowcol {
+
+    my $range = shift;
+
+    $range =~ /([A-Z]{1,3})(\d+)/;
+
+    my $col = $1;
+    my $row = $2;
+
+    # Convert base26 column string to number.
+    my @chars = split //, $col;
+    my $exponent = 0;
+    $col = 0;
+
+    while ( @chars ) {
+        my $char = pop @chars;    # LS char first
+        $col += ( ord( $char ) - ord( 'A' ) + 1 ) * ( 26**$exponent );
+        $exponent++;
+    }
+
+    # Convert 1-index to zero-index
+    $row--;
+    $col--;
+
+    return $row, $col;
+}
 
 
 
