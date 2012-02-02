@@ -114,29 +114,11 @@ sub _read_filehandle {
 }
 
 
-##############################################################################
-#
-# _read_all_nodes()
-#
-# Read all the nodes of a worksheet.xml file using an XML::LibXML::Reader
-# instance.
-#
-sub _read_all_nodes {
-
-    my $self = shift;
-
-    # TODO remove.
-
-    while ( $self->{_reader}->read() ) {
-        $self->_read_node( $self->{_reader} );
-    }
-}
-
 ###############################################################################
 #
 # next_row()
 #
-# TODO
+# Read the next available row in the worksheet.
 #
 sub next_row {
 
@@ -158,7 +140,7 @@ sub next_row {
 #
 # next_cell()
 #
-# TODO
+# Get the cell cell in the current row.
 #
 sub next_cell {
 
