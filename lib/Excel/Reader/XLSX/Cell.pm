@@ -1,8 +1,8 @@
-package Excel::Reader::XLSX::Worksheet;
+package Excel::Reader::XLSX::Cell;
 
 ###############################################################################
 #
-# Worksheet - A class for reading the Excel XLSX sheet.xml file.
+# Cell - A class for reading the Excel XLSX cells.
 #
 # Used in conjunction with Excel::Reader::XLSX
 #
@@ -18,14 +18,10 @@ use strict;
 use warnings;
 use Carp;
 use XML::LibXML::Reader;
-use Excel::Reader::XLSX::Row;
 use Excel::Reader::XLSX::Package::XMLreader;
 
 our @ISA     = qw(Excel::Reader::XLSX::Package::XMLreader);
 our $VERSION = '0.00';
-
-our $FULL_DEPTH  = 1;
-our $RICH_STRING = 1;
 
 
 ###############################################################################
@@ -39,7 +35,8 @@ sub new {
     my $class = shift;
     my $self  = Excel::Reader::XLSX::Package::XMLreader->new();
 
-    $self->{_reader} = undef;
+    $self->{_reader} = shift;
+    $self->{_value} = '';
 
     bless $self, $class;
 
@@ -49,69 +46,19 @@ sub new {
 
 ###############################################################################
 #
-# next_row()
+# get_value()
 #
-# Read the next available row in the worksheet.
+# Get the cell value.
 #
-sub next_row {
-
-    my $self = shift;
-    my $row  = undef;
-
-    my $has_row = $self->{_reader}->nextElement( 'row' );
-
-    if ( $has_row ) {
-        $row = Excel::Reader::XLSX::Row->new( $self->{_reader} );
-    }
-
-    return $row;
-}
-###############################################################################
-#
-# name()
-#
-# TODO
-#
-sub name {
+sub get_value {
 
     my $self = shift;
 
-    return $self->{_name};
+    return $self->{_value};
 }
 
 
-###############################################################################
-#
-# _range_to_rowcol($range)
-#
-# TODO.
-#
-sub _range_to_rowcol {
 
-    my $range = shift;
-
-    $range =~ /([A-Z]{1,3})(\d+)/;
-
-    my $col = $1;
-    my $row = $2;
-
-    # Convert base26 column string to number.
-    my @chars = split //, $col;
-    my $exponent = 0;
-    $col = 0;
-
-    while ( @chars ) {
-        my $char = pop @chars;    # LS char first
-        $col += ( ord( $char ) - ord( 'A' ) + 1 ) * ( 26**$exponent );
-        $exponent++;
-    }
-
-    # Convert 1-index to zero-index
-    $row--;
-    $col--;
-
-    return $row, $col;
-}
 
 
 1;
@@ -123,7 +70,7 @@ __END__
 
 =head1 NAME
 
-Worksheet - A class for reading the Excel XLSX sheet.xml file.
+Cell - A class for reading the Excel XLSX cells.
 
 =head1 SYNOPSIS
 

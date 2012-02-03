@@ -1,8 +1,8 @@
-package Excel::Reader::XLSX::Worksheet;
+package Excel::Reader::XLSX::Row;
 
 ###############################################################################
 #
-# Worksheet - A class for reading the Excel XLSX sheet.xml file.
+# Row - A class for reading Excel XLSX rows.
 #
 # Used in conjunction with Excel::Reader::XLSX
 #
@@ -18,7 +18,7 @@ use strict;
 use warnings;
 use Carp;
 use XML::LibXML::Reader;
-use Excel::Reader::XLSX::Row;
+use Excel::Reader::XLSX::Cell;
 use Excel::Reader::XLSX::Package::XMLreader;
 
 our @ISA     = qw(Excel::Reader::XLSX::Package::XMLreader);
@@ -36,10 +36,12 @@ our $RICH_STRING = 1;
 #
 sub new {
 
-    my $class = shift;
-    my $self  = Excel::Reader::XLSX::Package::XMLreader->new();
+    my $class  = shift;
+    my $self   = Excel::Reader::XLSX::Package::XMLreader->new();
 
-    $self->{_reader} = undef;
+    $self->{_reader}       = shift;
+    $self->{_row_is_empty} = $self->{_reader}->isEmptyElement();;
+    $self->{_end_of_row}   = 0;
 
     bless $self, $class;
 
@@ -49,34 +51,75 @@ sub new {
 
 ###############################################################################
 #
-# next_row()
+# next_cell()
 #
-# Read the next available row in the worksheet.
+# Get the cell cell in the current row.
 #
-sub next_row {
+sub next_cell {
 
     my $self = shift;
-    my $row  = undef;
+    my $cell;
+    my $node;
+    my $cell_start = 0;
 
-    my $has_row = $self->{_reader}->nextElement( 'row' );
+    return if $self->{_row_is_empty};
+    return if $self->{_end_of_row};
 
-    if ( $has_row ) {
-        $row = Excel::Reader::XLSX::Row->new( $self->{_reader} );
+
+    while ( !$cell_start ) {
+
+        return if !$self->{_reader}->read();
+        $node = $self->{_reader};
+
+        if (   $node->name() eq 'c'
+            && $node->nodeType() == XML_READER_TYPE_ELEMENT )
+        {
+            $cell_start = 1;
+            last;
+        }
+
+        if ( $node->name eq 'row' ) {
+            $self->{_end_of_row} = 1;
+            return;
+        }
+
+
     }
 
-    return $row;
-}
-###############################################################################
-#
-# name()
-#
-# TODO
-#
-sub name {
 
-    my $self = shift;
+    my $range = $node->getAttribute( 'r' );
+    return unless $range;
 
-    return $self->{_name};
+    # Create a cell object.
+    $cell = Excel::Reader::XLSX::Cell->new( undef );
+
+
+    ( $cell->{_row}, $cell->{_col} ) = _range_to_rowcol( $range );
+
+
+    my $type = $node->getAttribute( 't' ) || '';
+
+    $cell->{_type} = $type;
+
+
+    my $cell_node = $node->copyCurrentNode( $FULL_DEPTH );
+
+
+    # Read the cell <c> child nodes.
+    for my $child_node ( $cell_node->childNodes() ) {
+
+        if ( $child_node->nodeName() eq 'v' ) {
+            $cell->{_value}     = $child_node->textContent();
+            $cell->{_has_value} = 1;
+        }
+        elsif ( $child_node->nodeName() eq 'f' ) {
+            $cell->{_formula}     = $child_node->textContent();
+            $cell->{_has_formula} = 1;
+        }
+    }
+
+
+    return $cell;
 }
 
 
@@ -123,7 +166,7 @@ __END__
 
 =head1 NAME
 
-Worksheet - A class for reading the Excel XLSX sheet.xml file.
+Row - A class for reading Excel XLSX rows.
 
 =head1 SYNOPSIS
 
