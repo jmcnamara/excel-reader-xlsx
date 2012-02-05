@@ -1,0 +1,67 @@
+{
+   "caption"     : "Test reading data.",
+   "description" : "Simple test of reading data from 3 worksheets.",
+   "xlsx_file"   : "data01.xlsx",
+   "expected" : {
+      "Sheet1" : [
+         {
+            "row" : 0,
+            "col" : 0,
+            "value" : "Foo"
+         },
+         {
+            "row" : 2,
+            "col" : 0,
+            "value" : "2"
+         },
+         {
+            "row" : 2,
+            "col" : 1,
+            "value" : "4"
+         },
+         {
+            "row" : 2,
+            "col" : 2,
+            "value" : "5"
+         },
+         {
+            "row" : 3,
+            "col" : 0,
+            "value" : "10"
+         },
+         {
+            "row" : 4,
+            "col" : 0,
+            "value" : "Bar"
+         },
+         {
+            "row" : 5,
+            "col" : 0,
+            "value" : ""
+         }
+      ],
+      "Sheet2" : [],
+      "Sheet3" : [
+         {
+            "row" : 0,
+            "col" : 0,
+            "value" : "Foo"
+         },
+         {
+            "row" : 1,
+            "col" : 0,
+            "value" : "Goo"
+         },
+         {
+            "row" : 2,
+            "col" : 0,
+            "value" : "Moo"
+         },
+         {
+            "row" : 3,
+            "col" : 0,
+            "value" : "123"
+         }
+      ]
+   }
+}
