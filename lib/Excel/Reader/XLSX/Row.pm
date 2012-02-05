@@ -39,9 +39,10 @@ sub new {
     my $class  = shift;
     my $self   = Excel::Reader::XLSX::Package::XMLreader->new();
 
-    $self->{_reader}       = shift;
-    $self->{_row_is_empty} = $self->{_reader}->isEmptyElement();;
-    $self->{_end_of_row}   = 0;
+    $self->{_reader}         = shift;
+    $self->{_shared_strings} = shift;
+    $self->{_row_is_empty}   = $self->{_reader}->isEmptyElement();
+    $self->{_end_of_row}     = 0;
 
     bless $self, $class;
 
@@ -119,9 +120,35 @@ sub next_cell {
     }
 
 
+    # If the cell type is a string convert the value index to a string.
+    if ( $cell->{_type} eq 's' ) {
+        $cell->{_value} =
+          $self->{_shared_strings}->_get_string( $cell->{_value} );
+    }
+
     return $cell;
 }
 
+
+
+###############################################################################
+#
+# row_number()
+#
+# Return the cell row number, zero-indexed.
+#
+sub row_number {
+
+    my $self = shift;
+
+    return $self->{_row_number};
+}
+
+
+
+#
+# Internal methods.
+#
 
 ###############################################################################
 #

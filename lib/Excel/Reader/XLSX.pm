@@ -67,9 +67,6 @@ sub read_file {
     # This is required by Archive::Zip.
     $tempdir .= '/' if $tempdir !~ m{/$};
 
-    print "$tempdir\n";
-
-
     my $zipfile = Archive::Zip->new();
 
     my $status = $zipfile->read( $filename );
@@ -95,7 +92,8 @@ sub read_file {
     #my %files = $content_types->_get_files();
 
 
-    my $workbook = Excel::Reader::XLSX::Workbook->new( $tempdir, %files );
+    my $workbook =
+      Excel::Reader::XLSX::Workbook->new( $tempdir, $shared_strings, %files );
 
     $workbook->_read_file( $tempdir . $files{_workbook} );
     $workbook->_read_all_nodes();

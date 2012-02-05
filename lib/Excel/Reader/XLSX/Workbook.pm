@@ -37,10 +37,10 @@ our $RICH_STRING = 1;
 #
 sub new {
 
-    my $class = shift;
-
-    my $package_dir = shift;
-    my %files       = @_;
+    my $class          = shift;
+    my $package_dir    = shift;
+    my $shared_strings = shift;
+    my %files          = @_;
 
     my $self = {
         _reader          => undef,
@@ -49,6 +49,8 @@ sub new {
         _worksheets      => undef,
         _worksheet_attributes => [],
     };
+
+    $self->{_shared_strings} = $shared_strings;
 
     bless $self, $class;
 
@@ -210,9 +212,9 @@ sub worksheets {
     }
 
     for my $attribute ( @{ $self->{_worksheet_attributes} } ) {
-        print ">> $attribute->{_filename}\n";
 
-        my $worksheet = Excel::Reader::XLSX::Worksheet->new();
+        my $worksheet =
+          Excel::Reader::XLSX::Worksheet->new( $self->{_shared_strings} );
 
         $worksheet->{_name} = $attribute->{_name};
 

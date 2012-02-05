@@ -39,7 +39,8 @@ sub new {
     my $class = shift;
     my $self  = Excel::Reader::XLSX::Package::XMLreader->new();
 
-    $self->{_reader} = undef;
+#    $self->{_reader}         = shift;
+    $self->{_shared_strings} = shift;
 
     bless $self, $class;
 
@@ -61,7 +62,12 @@ sub next_row {
     my $has_row = $self->{_reader}->nextElement( 'row' );
 
     if ( $has_row ) {
-        $row = Excel::Reader::XLSX::Row->new( $self->{_reader} );
+        $row = Excel::Reader::XLSX::Row->new(
+
+            $self->{_reader},
+            $self->{_shared_strings},
+        );
+
     }
 
     return $row;
@@ -77,40 +83,6 @@ sub name {
     my $self = shift;
 
     return $self->{_name};
-}
-
-
-###############################################################################
-#
-# _range_to_rowcol($range)
-#
-# TODO.
-#
-sub _range_to_rowcol {
-
-    my $range = shift;
-
-    $range =~ /([A-Z]{1,3})(\d+)/;
-
-    my $col = $1;
-    my $row = $2;
-
-    # Convert base26 column string to number.
-    my @chars = split //, $col;
-    my $exponent = 0;
-    $col = 0;
-
-    while ( @chars ) {
-        my $char = pop @chars;    # LS char first
-        $col += ( ord( $char ) - ord( 'A' ) + 1 ) * ( 26**$exponent );
-        $exponent++;
-    }
-
-    # Convert 1-index to zero-index
-    $row--;
-    $col--;
-
-    return $row, $col;
 }
 
 

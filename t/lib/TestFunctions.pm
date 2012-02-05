@@ -19,6 +19,7 @@ our @EXPORT      = ();
 our %EXPORT_TAGS = ();
 our @EXPORT_OK   = qw(
   _is_deep_diff
+  _read_json
 );
 
 our $VERSION = '0.00';
@@ -45,6 +46,32 @@ sub _is_deep_diff {
     }
 
 }
+
+
+###############################################################################
+#
+# _read_json()
+#
+# Read test data from a JSON file.
+#
+sub _read_json {
+
+    my $filename = shift;
+
+    # Read in the JSON test data
+    local $/;
+    open my $fh, '<:encoding(UTF-8)', $filename
+      or die "Couldn't open $filename\n";
+
+    my $json_text = <$fh>;
+
+
+    use JSON;
+    my $data      = decode_json( $json_text );
+
+    return $data;
+}
+
 
 
 1;

@@ -46,15 +46,44 @@ sub new {
 
 ###############################################################################
 #
-# get_value()
+# value()
 #
-# Get the cell value.
+# Return the cell value.
 #
-sub get_value {
+sub value {
 
     my $self = shift;
 
     return $self->{_value};
+}
+
+
+###############################################################################
+#
+# row()
+#
+# Return the cell row number, zero-indexed.
+#
+sub row {
+
+    my $self = shift;
+
+    return $self->{_row};
+}
+
+
+
+###############################################################################
+#
+# col()
+#
+# Return the cell column number, zero indexed.
+#
+sub col {
+
+    my $self = shift;
+
+    return $self->{_col};
 }
 
 
