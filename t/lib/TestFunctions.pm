@@ -65,9 +65,9 @@ sub _read_json {
 
     my $json_text = <$fh>;
 
-
     use JSON;
-    my $data      = decode_json( $json_text );
+    my $json  = JSON::XS->new();
+    my $data = $json->decode( $json_text );
 
     return $data;
 }

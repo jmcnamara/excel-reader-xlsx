@@ -35,8 +35,8 @@ sub new {
     my $class = shift;
     my $self  = Excel::Reader::XLSX::Package::XMLreader->new();
 
-    $self->{_reader} = shift;
-    $self->{_value} = '';
+    $self->{_shared_strings} = shift;
+    $self->{_value}          = '';
 
     bless $self, $class;
 
@@ -53,6 +53,16 @@ sub new {
 sub value {
 
     my $self = shift;
+
+    # If the cell type is a shared string convert the value index to a string.
+    if ( $self->{_type} eq 's' && !$self->{_converted_string}) {
+        $self->{_value} =
+          $self->{_shared_strings}->_get_string( $self->{_value} );
+
+        # State variable so that multiple calls to value() don't need lookups.
+        $self->{_converted_string} = 1;
+    }
+
 
     return $self->{_value};
 }

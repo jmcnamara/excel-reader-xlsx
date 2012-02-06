@@ -92,7 +92,7 @@ sub next_cell {
     return unless $range;
 
     # Create a cell object.
-    $cell = Excel::Reader::XLSX::Cell->new( undef );
+    $cell = Excel::Reader::XLSX::Cell->new( $self->{_shared_strings} );
 
 
     ( $cell->{_row}, $cell->{_col} ) = _range_to_rowcol( $range );
@@ -119,12 +119,6 @@ sub next_cell {
         }
     }
 
-
-    # If the cell type is a string convert the value index to a string.
-    if ( $cell->{_type} eq 's' ) {
-        $cell->{_value} =
-          $self->{_shared_strings}->_get_string( $cell->{_value} );
-    }
 
     return $cell;
 }
