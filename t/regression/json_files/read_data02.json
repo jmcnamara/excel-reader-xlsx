@@ -1,0 +1,29 @@
+{
+   "caption"     : "Test reading data.",
+   "description" : "Simple test of reading inline data from a worksheet.",
+   "xlsx_file"   : "inline01.xlsx",
+   "expected" : {
+      "Sheet1" : [
+         {
+            "row" : 0,
+            "col" : 0,
+            "value" : "Hello"
+         },
+         {
+            "row" : 1,
+            "col" : 0,
+            "value" : "123"
+         },
+         {
+            "row" : 2,
+            "col" : 0,
+            "value" : "This is bold text"
+         },
+         {
+            "row" : 3,
+            "col" : 0,
+            "value" : "This is a Unicode string €"
+         }
+      ]
+   }
+}

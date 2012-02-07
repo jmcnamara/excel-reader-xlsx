@@ -1,0 +1,31 @@
+{
+   "caption"     : "Test reading data.",
+   "description" : "Simple test of reading data from a Libre Office file.",
+   "xlsx_file"   : "libre01.xlsx",
+   "expected" : {
+      "Sheet1" : [
+         {
+            "row" : 0,
+            "col" : 0,
+            "value" : "Hello"
+         },
+         {
+            "row" : 1,
+            "col" : 0,
+            "value" : "123"
+         },
+         {
+            "row" : 2,
+            "col" : 0,
+            "value" : "This is a rich string"
+         },
+         {
+            "row" : 3,
+            "col" : 0,
+            "value" : "This is a Unicode string €"
+         }
+      ],
+      "Sheet2" : [],
+      "Sheet3" : []
+   }
+}

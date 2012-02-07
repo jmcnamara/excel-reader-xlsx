@@ -113,6 +113,10 @@ sub next_cell {
             $cell->{_value}     = $child_node->textContent();
             $cell->{_has_value} = 1;
         }
+        if ( $child_node->nodeName() eq 'is' ) {
+            $cell->{_value}     = $child_node->textContent();
+            $cell->{_has_value} = 1;
+        }
         elsif ( $child_node->nodeName() eq 'f' ) {
             $cell->{_formula}     = $child_node->textContent();
             $cell->{_has_formula} = 1;
@@ -203,7 +207,7 @@ John McNamara jmcnamara@cpan.org
 
 =head1 COPYRIGHT
 
-© MMXII, John McNamara.
+ï¿½ MMXII, John McNamara.
 
 All Rights Reserved. This module is free software. It may be used, redistributed and/or modified under the same terms as Perl itself.
 

@@ -86,10 +86,14 @@ sub read_file {
 
     my $shared_strings = Excel::Reader::XLSX::Package::SharedStrings->new();
 
-    $shared_strings->_read_file( $tempdir . $files{_shared_strings} );
-    $shared_strings->_read_all_nodes();
+    if ( $files{_shared_strings} ) {
+        $shared_strings->_read_file( $tempdir . $files{_shared_strings} );
+        $shared_strings->_read_all_nodes();
+    }
 
-    #my %files = $content_types->_get_files();
+
+    use Data::Dumper::Perltidy;
+    print Dumper \%files;
 
 
     my $workbook =
@@ -100,8 +104,6 @@ sub read_file {
 
 
 
-    # use Data::Dumper::Perltidy;
-    # print Dumper \%files;
     # print Dumper $shared_strings->{_strings};
     # print Dumper $workbook->{_worksheet_names};
     # print Dumper $workbook;
