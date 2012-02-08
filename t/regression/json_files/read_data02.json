@@ -1,5 +1,5 @@
 {
-   "caption"     : "Test reading data.",
+   "caption"     : "Test data reading.",
    "description" : "Simple test of reading inline data from a worksheet.",
    "xlsx_file"   : "inline01.xlsx",
    "expected" : {

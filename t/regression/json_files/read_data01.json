@@ -1,6 +1,6 @@
 {
-   "caption"     : "Test reading data.",
-   "description" : "Simple test of reading data from 3 worksheets.",
+   "caption"     : "Test data reading.",
+   "description" : "Simple test of reading data from multiple worksheets.",
    "xlsx_file"   : "data01.xlsx",
    "expected" : {
       "Sheet1" : [

@@ -8,15 +8,13 @@ require 5.008002;
 
 my %deps = (
     'Archive::Zip'        => 1.30,
-    'IO::File'            => 1.14,
-    'XML::LIBXML'         => 1.89,
-    'Excel::Writer::XLSX' => 0,
+    'XML::LibXML'         => 1.90,
 );
 
 my %resources = (
-
     homepage    => 'http://jmcnamara.github.com/excel-reader-xlsx/',
     repository  => 'http://github.com/jmcnamara/excel-reader-xlsx',
+    bugtracker  => 'http://github.com/jmcnamara/excel-reader-xlsx/issues',
     MailingList => 'http://groups.google.com/group/spreadsheet-writeexcel',
 );
 

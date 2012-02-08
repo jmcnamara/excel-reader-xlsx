@@ -1,5 +1,5 @@
 {
-   "caption"     : "Test reading data.",
+   "caption"     : "Test data reading.",
    "description" : "Simple test of reading data from a Libre Office file.",
    "xlsx_file"   : "libre01.xlsx",
    "expected" : {
