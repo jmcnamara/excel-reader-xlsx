@@ -4,7 +4,7 @@ package TestFunctions;
 #
 # TestFunctions - Helper functions for Excel::Reader::XLSX test cases.
 #
-# reverse('©'), January 2012, John McNamara, jmcnamara@cpan.org
+# reverse('ï¿½'), January 2012, John McNamara, jmcnamara@cpan.org
 #
 
 use 5.008002;
@@ -65,9 +65,14 @@ sub _read_json {
 
     my $json_text = <$fh>;
 
-    use JSON;
-    my $json  = JSON::XS->new();
-    my $data = $json->decode( $json_text );
+    $json_text =~ s/ : / => /g;
+
+    my $data = eval $json_text;
+
+
+    # use JSON;
+    # my $json  = JSON::XS->new();
+    # my $data = $json->decode( $json_text );
 
     return $data;
 }

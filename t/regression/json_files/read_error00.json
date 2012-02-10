@@ -1,0 +1,9 @@
+{
+   "caption"     : "Test error handling.",
+   "description" : "Reads a normal file without error.",
+   "xlsx_file"   : "data01.xlsx",
+   "expected" : {
+      "error_code" : 0,
+      "error_text" : ""
+   }
+}

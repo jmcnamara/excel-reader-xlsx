@@ -15,15 +15,15 @@ use 5.008002;
 use strict;
 use warnings;
 use Exporter;
-use Archive::Zip qw(:ERROR_CODES);
-use File::Temp   qw(tempdir);
+use Archive::Zip;
+use File::Temp  qw(tempdir);
 use Excel::Reader::XLSX::Workbook;
 use Excel::Reader::XLSX::Package::ContentTypes;
 use Excel::Reader::XLSX::Package::SharedStrings;
 
 
-# Suppress Archive::Zip error reporting. We will handle errors.
-Archive::Zip::setErrorHandler( sub { } );
+# Modify Archive::Zip error handling reporting so we can catch errors.
+Archive::Zip::setErrorHandler( sub { die shift } );
 
 our @ISA     = qw(Exporter);
 our $VERSION = '0.00';
@@ -31,22 +31,18 @@ our $VERSION = '0.00';
 # Error codes for some common errors.
 our $ERROR_none                        = 0;
 our $ERROR_file_not_found              = 1;
-our $ERROR_zip_generic_error           = 2;
-our $ERROR_zip_format_error            = 3;
-our $ERROR_zip_io_error                = 4;
-our $ERROR_file_has_no_content_types   = 5;
-our $ERROR_file_missing_shared_strings = 6;
-our $ERROR_file_missing_workbook       = 7;
+our $ERROR_file_zip_error              = 2;
+our $ERROR_file_missing_subfile        = 3;
+our $ERROR_file_has_no_content_types   = 4;
+our $ERROR_file_missing_workbook       = 5;
 
 our @error_strings = (
     '',                                                 # 0
     'File not found',                                   # 1
-    'File not in XLSX format',                          # 2
-    'File has generic zip error, from Archive::Zip',    # 3
-    'File has zip format error, form Archive::Zip',     # 4
-    'File has no [Content_Types].xml',                  # 5
-    'File is missing sharedStrings.xml',                # 6
-    'File is missing workbook.xml',                     # 7
+    'File has zip error',                               # 2
+    'File missing subfile',                             # 3
+    'File has no [Content_Types].xml',                  # 4
+    'File is missing workbook.xml',                     # 5
 );
 
 
@@ -59,9 +55,11 @@ sub new {
     my $class = shift;
 
     my $self = {
-        _reader       => undef,
-        _files        => {},
-        _tempdir      => undef,
+        _reader           => undef,
+        _files            => {},
+        _tempdir          => undef,
+        _error_status     => 0,
+        _error_extra_text => '',
     };
 
     bless $self, $class;
@@ -88,6 +86,7 @@ sub read_file {
     # Check that the file exists.
     if ( !-e $filename ) {
         $self->{_error_status} = $ERROR_file_not_found;
+        $self->{_error_extra_text} = $filename;
         return;
     }
 
@@ -100,12 +99,15 @@ sub read_file {
     # Create an Archive::Zip object to unzip the XLSX file.
     my $zipfile = Archive::Zip->new();
 
-    # Read the file and verify the zip structure.
-    my $status = $zipfile->read( $filename );
+    # Read the XLSX zip file and catch any errors.
+    eval { $zipfile->read($filename) };
 
-    # Exit if there was a zip error.
-    if ($status > AZ_STREAM_END) {
-        $self->{_error_status} = $status;
+    # Store the zip error and return.
+    if ($@) {
+        my $error_text = $@;
+        chomp $error_text;
+        $self->{_error_status}     = $ERROR_file_zip_error;
+        $self->{_error_extra_text} = $error_text;
         return;
     }
 
@@ -137,7 +139,7 @@ sub read_file {
 
         # Check that the file exists even if it is listed in [Content_Types].
         if ( !-e $tempdir . $files{_shared_strings} ) {
-            $self->{_error_status} = $ERROR_file_missing_shared_strings;
+            $self->{_error_status} = $ERROR_file_missing_subfile;
             return;
         }
 
@@ -155,7 +157,7 @@ sub read_file {
 
     # Check that the file exists even if it is listed in [Content_Types].
     if ( !-e $tempdir . $files{_workbook} ) {
-        $self->{_error_status} = $ERROR_file_missing_workbook;
+        $self->{_error_status} = $ERROR_file_missing_subfile;
         return;
     }
 
@@ -182,9 +184,14 @@ sub read_file {
 sub error {
 
     my $self       = shift;
-    my $read_error = $self->{_error_status};
+    my $error_index = $self->{_error_status};
+    my $error       = $error_strings[$error_index];
 
-    return $error_strings[$read_error];
+    if ($self->{_error_extra_text}) {
+        $error .= '. ' . $self->{_error_extra_text};
+    }
+
+    return $error;
 }
 
 
