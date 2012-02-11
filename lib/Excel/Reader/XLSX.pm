@@ -17,7 +17,7 @@ use warnings;
 use Exporter;
 use Archive::Zip;
 use OLE::Storage_Lite;
-use File::Temp  qw(tempdir);
+use File::Temp qw(tempdir);
 use Excel::Reader::XLSX::Workbook;
 use Excel::Reader::XLSX::Package::ContentTypes;
 use Excel::Reader::XLSX::Package::SharedStrings;
@@ -30,26 +30,26 @@ our @ISA     = qw(Exporter);
 our $VERSION = '0.00';
 
 # Error codes for some common errors.
-our $ERROR_none                        = 0;
-our $ERROR_file_not_found              = 1;
-our $ERROR_file_is_xls                 = 2;
-our $ERROR_file_is_encrypted           = 3;
-our $ERROR_file_is_unknown_ole         = 4;
-our $ERROR_file_zip_error              = 5;
-our $ERROR_file_missing_subfile        = 6;
-our $ERROR_file_has_no_content_types   = 7;
-our $ERROR_file_missing_workbook       = 8;
+our $ERROR_none                      = 0;
+our $ERROR_file_not_found            = 1;
+our $ERROR_file_is_xls               = 2;
+our $ERROR_file_is_encrypted         = 3;
+our $ERROR_file_is_unknown_ole       = 4;
+our $ERROR_file_zip_error            = 5;
+our $ERROR_file_missing_subfile      = 6;
+our $ERROR_file_has_no_content_types = 7;
+our $ERROR_file_has_no_workbook      = 8;
 
 our @error_strings = (
-    '',                                                 # 0
-    'File not found',                                   # 1
-    'File is xls not xlsx',                             # 2
-    'File is encrypted xlsx',                           # 3
-    'File is unknown OLE doc type',                     # 4
-    'File has zip error',                               # 5
-    'File missing subfile',                             # 6
-    'File has no [Content_Types].xml',                  # 7
-    'File is missing workbook.xml',                     # 8
+    '',                                   # 0
+    'File not found',                     # 1
+    'File is xls not xlsx',               # 2
+    'File is encrypted xlsx',             # 3
+    'File is unknown OLE doc type',       # 4
+    'File has zip error',                 # 5
+    'File missing subfile',               # 6
+    'File has no [Content_Types].xml',    # 7
+    'File has no workbook.xml',           # 8
 );
 
 
@@ -92,10 +92,11 @@ sub read_file {
 
     # Check that the file exists.
     if ( !-e $filename ) {
-        $self->{_error_status} = $ERROR_file_not_found;
+        $self->{_error_status}     = $ERROR_file_not_found;
         $self->{_error_extra_text} = $filename;
         return;
     }
+
 
     # Check for xls or encrypted OLE files.
     my $ole_file = $self->_check_if_ole_file( $filename );
@@ -106,19 +107,20 @@ sub read_file {
     }
 
     # Create a, locally scoped, temp dir to unzip the XLSX file into.
-    my $tempdir  = File::Temp->newdir( DIR => $self->{_tempdir} );
+    my $tempdir = File::Temp->newdir( DIR => $self->{_tempdir} );
 
     # Archive::Zip requires a Unix directory separator to the end.
     $tempdir .= '/' if $tempdir !~ m{/$};
+
 
     # Create an Archive::Zip object to unzip the XLSX file.
     my $zipfile = Archive::Zip->new();
 
     # Read the XLSX zip file and catch any errors.
-    eval { $zipfile->read($filename) };
+    eval { $zipfile->read( $filename ) };
 
     # Store the zip error and return.
-    if ($@) {
+    if ( $@ ) {
         my $error_text = $@;
         chomp $error_text;
         $self->{_error_status}     = $ERROR_file_zip_error;
@@ -145,8 +147,7 @@ sub read_file {
     # Read the filenames from the [Content_Types].
     my %files = $content_types->_get_files();
 
-
-    # Check that the files actually exist.
+    # Check that the listed files actually exist.
     my $files_exist = $self->_check_files_exist( $tempdir, %files );
 
     if ( !$files_exist ) {
@@ -154,6 +155,11 @@ sub read_file {
         return;
     }
 
+    # Verify that the workbook.xml file is listed.
+    if ( !$files{_workbook} ) {
+        $self->{_error_status} = $ERROR_file_has_no_workbook;
+        return;
+    }
 
     # Create a reader object to read the sharedStrings.xml file.
     my $shared_strings = Excel::Reader::XLSX::Package::SharedStrings->new();
@@ -172,7 +178,6 @@ sub read_file {
         %files
 
     );
-
 
     # Read data from the workbook.xml file.
     $workbook->_read_file( $tempdir . $files{_workbook} );
@@ -254,20 +259,18 @@ sub _check_if_ole_file {
         my $pps_name = OLE::Storage_Lite::Ucs2Asc( $child_pps->{Name} );
 
         # Match an Excel xls file.
-        if ($pps_name eq 'Workbook' || $pps_name eq 'Book' ) {
+        if ( $pps_name eq 'Workbook' || $pps_name eq 'Book' ) {
             return $ERROR_file_is_xls;
         }
 
         # Match an encrypted Excel xlsx file.
-        if ($pps_name eq 'EncryptedPackage') {
+        if ( $pps_name eq 'EncryptedPackage' ) {
             return $ERROR_file_is_encrypted;
         }
     }
 
     return $ERROR_file_is_unknown_ole;
 }
-
-
 
 
 ###############################################################################
@@ -278,11 +281,11 @@ sub _check_if_ole_file {
 #
 sub error {
 
-    my $self       = shift;
+    my $self        = shift;
     my $error_index = $self->{_error_status};
     my $error       = $error_strings[$error_index];
 
-    if ($self->{_error_extra_text}) {
+    if ( $self->{_error_extra_text} ) {
         $error .= ': ' . $self->{_error_extra_text};
     }
 

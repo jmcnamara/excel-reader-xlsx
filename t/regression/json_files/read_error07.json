@@ -1,0 +1,9 @@
+{
+   "caption"     : "Test error handling.",
+   "description" : "Returns an error when [Content_Types].xml is missing from xlsx file.",
+   "xlsx_file"   : "error07.xlsx",
+   "expected" : {
+      "error_code" : 7,
+      "error_text" : "File has no [Content_Types].xml"
+   }
+}
