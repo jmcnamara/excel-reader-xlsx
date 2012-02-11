@@ -1,0 +1,9 @@
+{
+   "caption"     : "Test error handling.",
+   "description" : "Returns an error when the file is encrypted xlsx.",
+   "xlsx_file"   : "error03.xlsx",
+   "expected" : {
+      "error_code" : 3,
+      "error_text" : "File is encrypted xlsx: t/regression/xlsx_files/error03.xlsx"
+   }
+}

@@ -4,6 +4,6 @@
    "xlsx_file"   : "error01.xlsx",
    "expected" : {
       "error_code" : 1,
-      "error_text" : "File not found. t/regression/xlsx_files/error01.xlsx"
+      "error_text" : "File not found: t/regression/xlsx_files/error01.xlsx"
    }
 }

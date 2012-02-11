@@ -1,0 +1,9 @@
+{
+   "caption"     : "Test error handling.",
+   "description" : "Returns a zip error when not a valid zip file.",
+   "xlsx_file"   : "error05.xlsx",
+   "expected" : {
+      "error_code" : 5,
+      "error_text" : "File has zip error: format error: can\'t find EOCD signature "
+   }
+}

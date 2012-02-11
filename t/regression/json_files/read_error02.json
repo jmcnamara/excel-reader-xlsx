@@ -1,9 +1,9 @@
 {
    "caption"     : "Test error handling.",
-   "description" : "Returns a zip error when not a valid zip file.",
+   "description" : "Returns a error if the file is an xls file.",
    "xlsx_file"   : "error02.xlsx",
    "expected" : {
       "error_code" : 2,
-      "error_text" : "File has zip error. format error: can\'t find EOCD signature "
+      "error_text" : "File is xls not xlsx: t/regression/xlsx_files/error02.xlsx"
    }
 }

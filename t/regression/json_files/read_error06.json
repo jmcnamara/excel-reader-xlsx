@@ -1,0 +1,9 @@
+{
+   "caption"     : "Test error handling.",
+   "description" : "Returns an error when a subfile is missing.",
+   "xlsx_file"   : "error06.xlsx",
+   "expected" : {
+      "error_code" : 6,
+      "error_text" : "File missing subfile: docProps/core.xml"
+   }
+}

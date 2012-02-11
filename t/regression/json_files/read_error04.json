@@ -1,0 +1,9 @@
+{
+   "caption"     : "Test error handling.",
+   "description" : "Returns a error if the file is an unknown OLE doc.",
+   "xlsx_file"   : "error04.xlsx",
+   "expected" : {
+      "error_code" : 4,
+      "error_text" : "File is unknown OLE doc type: t/regression/xlsx_files/error04.xlsx"
+   }
+}

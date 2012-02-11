@@ -16,6 +16,7 @@ use strict;
 use warnings;
 use Exporter;
 use Archive::Zip;
+use OLE::Storage_Lite;
 use File::Temp  qw(tempdir);
 use Excel::Reader::XLSX::Workbook;
 use Excel::Reader::XLSX::Package::ContentTypes;
@@ -31,18 +32,24 @@ our $VERSION = '0.00';
 # Error codes for some common errors.
 our $ERROR_none                        = 0;
 our $ERROR_file_not_found              = 1;
-our $ERROR_file_zip_error              = 2;
-our $ERROR_file_missing_subfile        = 3;
-our $ERROR_file_has_no_content_types   = 4;
-our $ERROR_file_missing_workbook       = 5;
+our $ERROR_file_is_xls                 = 2;
+our $ERROR_file_is_encrypted           = 3;
+our $ERROR_file_is_unknown_ole         = 4;
+our $ERROR_file_zip_error              = 5;
+our $ERROR_file_missing_subfile        = 6;
+our $ERROR_file_has_no_content_types   = 7;
+our $ERROR_file_missing_workbook       = 8;
 
 our @error_strings = (
     '',                                                 # 0
     'File not found',                                   # 1
-    'File has zip error',                               # 2
-    'File missing subfile',                             # 3
-    'File has no [Content_Types].xml',                  # 4
-    'File is missing workbook.xml',                     # 5
+    'File is xls not xlsx',                             # 2
+    'File is encrypted xlsx',                           # 3
+    'File is unknown OLE doc type',                     # 4
+    'File has zip error',                               # 5
+    'File missing subfile',                             # 6
+    'File has no [Content_Types].xml',                  # 7
+    'File is missing workbook.xml',                     # 8
 );
 
 
@@ -90,6 +97,14 @@ sub read_file {
         return;
     }
 
+    # Check for xls or encrypted OLE files.
+    my $ole_file = $self->_check_if_ole_file( $filename );
+    if ( $ole_file ) {
+        $self->{_error_status}     = $ole_file;
+        $self->{_error_extra_text} = $filename;
+        return;
+    }
+
     # Create a, locally scoped, temp dir to unzip the XLSX file into.
     my $tempdir  = File::Temp->newdir( DIR => $self->{_tempdir} );
 
@@ -130,18 +145,21 @@ sub read_file {
     # Read the filenames from the [Content_Types].
     my %files = $content_types->_get_files();
 
-    # Create a reader object to read the sharedStrings.xml file.
 
+    # Check that the files actually exist.
+    my $files_exist = $self->_check_files_exist( $tempdir, %files );
+
+    if ( !$files_exist ) {
+        $self->{_error_status} = $ERROR_file_missing_subfile;
+        return;
+    }
+
+
+    # Create a reader object to read the sharedStrings.xml file.
     my $shared_strings = Excel::Reader::XLSX::Package::SharedStrings->new();
 
     # Read the sharedStrings if present. Only files with strings have one.
     if ( $files{_shared_strings} ) {
-
-        # Check that the file exists even if it is listed in [Content_Types].
-        if ( !-e $tempdir . $files{_shared_strings} ) {
-            $self->{_error_status} = $ERROR_file_missing_subfile;
-            return;
-        }
 
         $shared_strings->_read_file( $tempdir . $files{_shared_strings} );
         $shared_strings->_read_all_nodes();
@@ -155,11 +173,6 @@ sub read_file {
 
     );
 
-    # Check that the file exists even if it is listed in [Content_Types].
-    if ( !-e $tempdir . $files{_workbook} ) {
-        $self->{_error_status} = $ERROR_file_missing_subfile;
-        return;
-    }
 
     # Read data from the workbook.xml file.
     $workbook->_read_file( $tempdir . $files{_workbook} );
@@ -177,6 +190,88 @@ sub read_file {
 
 ###############################################################################
 #
+# _check_files_exist()
+#
+# Verify that the subfiles read from the Content_Types actually exist;
+#
+sub _check_files_exist {
+
+    my $self    = shift;
+    my $tempdir = shift;
+    my %files   = @_;
+    my @filenames;
+
+    # Get the filenames for the files hash.
+    for my $key ( keys %files ) {
+        my $filename = $files{$key};
+
+        # Worksheets are stored in an aref.
+        if ( ref $filename ) {
+            push @filenames, @$filename;
+        }
+        else {
+            push @filenames, $filename;
+        }
+    }
+
+    # Verify that the files exist.
+    for my $filename ( @filenames ) {
+        if ( !-e $tempdir . $filename ) {
+            $self->{_error_extra_text} = $filename;
+            return;
+        }
+    }
+
+    return 1;
+}
+
+
+###############################################################################
+#
+# _check_if_ole_file()
+#
+# Check if the file in an OLE compound doc. This can happen in a few cases.
+# This first is when the file is xls and not xlsx. The second is when the
+# file is an encrypted xlsx file. We also handle the case of unknown OLE
+# file types.
+#
+# Porting note. As a lightweight test you can check for OLE files by looking
+# for the magic number 0xD0CF11E0 (docfile0) at the start of the file.
+#
+sub _check_if_ole_file {
+
+    my $self     = shift;
+    my $filename = shift;
+    my $ole      = OLE::Storage_Lite->new( $filename );
+    my $pps      = $ole->getPpsTree();
+
+    # If getPpsTree() failed then this isn't an OLE file.
+    return if !$pps;
+
+    # Loop throught the PPS children below the root.
+    for my $child_pps ( @{ $pps->{Child} } ) {
+
+        my $pps_name = OLE::Storage_Lite::Ucs2Asc( $child_pps->{Name} );
+
+        # Match an Excel xls file.
+        if ($pps_name eq 'Workbook' || $pps_name eq 'Book' ) {
+            return $ERROR_file_is_xls;
+        }
+
+        # Match an encrypted Excel xlsx file.
+        if ($pps_name eq 'EncryptedPackage') {
+            return $ERROR_file_is_encrypted;
+        }
+    }
+
+    return $ERROR_file_is_unknown_ole;
+}
+
+
+
+
+###############################################################################
+#
 # error().
 #
 # Return an error string for a failed read.
@@ -188,7 +283,7 @@ sub error {
     my $error       = $error_strings[$error_index];
 
     if ($self->{_error_extra_text}) {
-        $error .= '. ' . $self->{_error_extra_text};
+        $error .= ': ' . $self->{_error_extra_text};
     }
 
     return $error;

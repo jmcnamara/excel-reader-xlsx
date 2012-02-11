@@ -35,12 +35,13 @@ $reader->_read_all_nodes();
 $caption = " \tContentTypes: _strings";
 
 $expected = {
-    '_workbook'       => '/xl/workbook.xml',
-    '_app'            => '/docProps/app.xml',
-    '_styles'         => '/xl/styles.xml',
-    '_worksheets'     => [ '/xl/worksheets/sheet1.xml' ],
-    '_core'           => '/docProps/core.xml',
-    '_shared_strings' => '/xl/sharedStrings.xml'
+    '_workbook'       => 'xl/workbook.xml',
+    '_workbook_rels'  => 'xl/_rels/workbook.xml.rels',
+    '_app'            => 'docProps/app.xml',
+    '_styles'         => 'xl/styles.xml',
+    '_worksheets'     => [ 'xl/worksheets/sheet1.xml' ],
+    '_core'           => 'docProps/core.xml',
+    '_shared_strings' => 'xl/sharedStrings.xml'
 };
 
 

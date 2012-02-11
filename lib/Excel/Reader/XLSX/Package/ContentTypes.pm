@@ -140,6 +140,9 @@ sub _read_node {
     my $content_type = $node->getAttribute('ContentType');
 
 
+    # Strip leading directory separator from filename.
+    $part_name =~ s{^/}{};
+
     if ( $part_name =~ /app\.xml$/ ) {
         $self->{_files}->{_app} = $part_name;
         return;
@@ -161,7 +164,14 @@ sub _read_node {
     }
 
     if ( $part_name =~ /workbook\.xml$/ ) {
-        $self->{_files}->{_workbook} = $part_name;
+
+        # The workbook.xml.rels file isn't included in the ContentTypes but
+        # it is usually in the _rels dir at the same level at the workbook.xml.
+        my $workbook_rels = $part_name;
+        $workbook_rels =~ s{(workbook.xml)}{_rels/$1.rels};
+
+        $self->{_files}->{_workbook}      = $part_name;
+        $self->{_files}->{_workbook_rels} = $workbook_rels;
         return;
     }
 
