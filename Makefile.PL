@@ -8,7 +8,8 @@ require 5.008002;
 
 my %deps = (
     'Archive::Zip'        => 1.30,
-    'XML::LibXML'         => 1.90,
+    'XML::LibXML'         => 1.89,
+    'OLE::Storage_Lite'   => 0.19,
 );
 
 my %resources = (

@@ -64,19 +64,26 @@ sub _read_json {
       or die "Couldn't open $filename\n";
 
     my $json_text = <$fh>;
+    my $href;
 
-    $json_text =~ s/ : / => /g;
+    # Check if the JSON.pm module is avilable to parse the test data.
+    eval { require JSON };
 
-    my $data = eval $json_text;
+    if ( !$@ ) {
 
+        # We have JSON.pm.
+        my $json = JSON::XS->new();
+        $href = $json->decode( $json_text );
+    }
+    else {
 
-    # use JSON;
-    # my $json  = JSON::XS->new();
-    # my $data = $json->decode( $json_text );
+        # If JSON.pm isn't available we do a poor man's translation.
+        $json_text =~ s/ : / => /g;
+        $href = eval $json_text;
+    }
 
-    return $data;
+    return $href;
 }
-
 
 
 1;
