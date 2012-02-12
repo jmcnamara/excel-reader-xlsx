@@ -146,10 +146,6 @@ sub read_file {
     # Read the filenames from the [Content_Types].
     my %files = $content_types->_get_files();
 
-use Data::Dumper::Perltidy;
-print Dumper \%files;
-
-
     # Check that the listed files actually exist.
     my $files_exist = $self->_check_files_exist( $tempdir, %files );
 
