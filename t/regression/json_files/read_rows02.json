@@ -1,0 +1,50 @@
+{
+   "caption"     : "Test reading row data.",
+   "description" : "Simple test of reading previous row numbers from multiple worksheets.",
+   "xlsx_file"   : "data01.xlsx",
+   "expected" : {
+      "Sheet1" : [
+         {
+            "previous_row" : -1
+         },
+         {
+            "previous_row" : 0
+         },
+         {
+            "previous_row" : 1
+         },
+         {
+            "previous_row" : 2
+         },
+         {
+            "previous_row" : 3
+         },
+         {
+            "previous_row" : 4
+         }
+      ],
+      "Sheet2" : [],
+      "Sheet3" : [
+         {
+            "previous_row" : -1
+         },
+         {
+            "previous_row" : 0
+         },
+         {
+            "previous_row" : 1
+         },
+         {
+            "previous_row" : 2
+         }
+      ],
+      "Sheet4" : [
+         {
+            "previous_row" : -1
+         },
+         {
+            "previous_row" : 0
+         }
+      ]
+  }
+}

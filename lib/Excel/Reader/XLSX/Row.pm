@@ -38,11 +38,13 @@ sub new {
     my $class = shift;
     my $self  = Excel::Reader::XLSX::Package::XMLreader->new();
 
-    $self->{_reader}         = shift;
-    $self->{_shared_strings} = shift;
-    $self->{_row_number}     = shift;
-    $self->{_row_is_empty}   = $self->{_reader}->isEmptyElement();
-    $self->{_end_of_row}     = 0;
+    $self->{_reader}              = shift;
+    $self->{_shared_strings}      = shift;
+    $self->{_row_number}          = shift;
+    $self->{_previous_row_number} = shift;
+    $self->{_row_is_empty}        = $self->{_reader}->isEmptyElement();
+    $self->{_end_of_row}          = 0;
+    $self->{_values}              = undef;
 
     bless $self, $class;
 
@@ -83,8 +85,6 @@ sub next_cell {
             $self->{_end_of_row} = 1;
             return;
         }
-
-
     }
 
 
@@ -130,15 +130,70 @@ sub next_cell {
 
 ###############################################################################
 #
+# values()
+#
+# Return an array of values for a row. The range is from the first cell up
+# to the last cell. Returns '' for empty cells.
+#
+sub values {
+
+    my $self = shift;
+    my @values;
+
+
+    # The row values are cached to allow multiple calls. Return cached values
+    # if present.
+    if ( defined $self->{_values} ) {
+        return @{ $self->{_values} };
+    }
+
+    # Other wise read the values for the cells in the row.
+
+    # Store any cell values that exist.
+    while ( my $cell = $self->next_cell() ) {
+        my $col   = $cell->col();
+        my $value = $cell->value();
+        $values[$col] = $value;
+    }
+
+    # Convert any undef values to an empty string.
+    for my $value ( @values ) {
+        $value = '' if !defined $value;
+    }
+
+    # Store the values to allow multiple calls return the same data.
+    $self->{_values} = \@values;
+
+    return @values;
+}
+
+
+###############################################################################
+#
 # number()
 #
-# Return the cell row number, zero-indexed.
+# Return the row number, zero-indexed.
 #
 sub number {
 
     my $self = shift;
 
     return $self->{_row_number};
+}
+
+
+###############################################################################
+#
+# previous_number()
+#
+# Return the zero-indexed row number of the previously found row. Returns -1
+# if there was no previous number.
+#
+sub previous_number {
+
+    my $self = shift;
+
+    return $self->{_previous_row_number};
 }
 
 

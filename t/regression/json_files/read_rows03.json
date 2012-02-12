@@ -1,0 +1,45 @@
+{
+   "caption"     : "Test reading row data.",
+   "description" : "Test the values() method for reading an entire row of data.",
+   "xlsx_file"   : "data02.xlsx",
+   "expected" : {
+      "Sheet1" : [
+         [
+            "aaa",
+            "bbb",
+            "",
+            "ddd",
+            "",
+            "",
+            "ggg"
+         ],
+         [
+            "",
+            "",
+            "",
+            "1",
+            "2",
+            "",
+            "",
+            "4"
+         ],
+         [
+            "1"
+         ],
+         [
+            ""
+         ],
+         [
+            "aaa",
+            "bbb",
+            "ccc"
+         ],
+         [
+            "7"
+         ],
+         [
+            "2"
+         ]
+      ]
+   }
+}

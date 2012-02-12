@@ -36,7 +36,8 @@ sub new {
     my $class = shift;
     my $self  = Excel::Reader::XLSX::Package::XMLreader->new();
 
-    $self->{_shared_strings} = shift;
+    $self->{_shared_strings}      = shift;
+    $self->{_previous_row_number} = -1;
 
     bless $self, $class;
 
@@ -60,18 +61,28 @@ sub next_row {
     if ( $has_row ) {
 
         my $node = $self->{_reader};
-        my $row_number = $node->getAttribute( 'r' ) || 0;
+        my $row_number = $node->getAttribute( 'r' );
 
-        # Convert to zero indexed value.
-        $row_number--;
+        if ( defined $row_number ) {
+
+            # Convert to zero indexed value.
+            $row_number--;
+        }
+        else {
+
+            # If no 'r' attribute assume it is one more than the previous.
+            $row_number = $self->{_previous_row_number} + 1;
+        }
 
         $row = Excel::Reader::XLSX::Row->new(
 
             $self->{_reader},
             $self->{_shared_strings},
             $row_number,
+            $self->{_previous_row_number},
         );
 
+        $self->{_previous_row_number} = $row_number;
     }
 
     return $row;
