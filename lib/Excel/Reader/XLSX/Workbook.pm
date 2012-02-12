@@ -18,15 +18,12 @@ use strict;
 use warnings;
 use Exporter;
 use Carp;
-use XML::LibXML::Reader;
+use XML::LibXML::Reader qw(:types);
 use Excel::Reader::XLSX::Worksheet;
 use Excel::Reader::XLSX::Package::Relationships;
 
-our @ISA     = qw(Exporter);
+our @ISA     = qw(Excel::Reader::XLSX::Package::XMLreader);
 our $VERSION = '0.00';
-
-our $FULL_DEPTH  = 1;
-our $RICH_STRING = 1;
 
 
 ###############################################################################
@@ -42,18 +39,19 @@ sub new {
     my $shared_strings = shift;
     my %files          = @_;
 
-    my $self = {
-        _reader          => undef,
-        _package_dir     => $package_dir,
-        _files           => \%files,
-        _worksheets      => undef,
-        _worksheet_attributes => [],
-    };
+    my $self = Excel::Reader::XLSX::Package::XMLreader->new();
 
-    $self->{_shared_strings} = $shared_strings;
+    $self->{_package_dir}          = $package_dir;
+    $self->{_shared_strings}       = $shared_strings;
+    $self->{_files}                = \%files;
+    $self->{_worksheets}           = undef;
+    $self->{_worksheet_attributes} = [];
+
+    # Set the root dir for the workbook and worksheets. Usually 'xl/'.
+    $self->{_workbook_root} = $self->{_files}->{_workbook};
+    $self->{_workbook_root} =~ s/workbook.xml$//;
 
     bless $self, $class;
-
 
     $self->_set_relationships();
 
@@ -61,87 +59,11 @@ sub new {
 }
 
 
-##############################################################################
-#
-# _read_file()
-#
-# Create an XML::LibXML::Reader instance from a file.
-#
-sub _read_file {
-
-    my $self     = shift;
-    my $filename = shift;
-
-    my $xml_reader = XML::LibXML::Reader->new( location => $filename );
-
-    $self->{_reader} = $xml_reader;
-
-    return $xml_reader;
-}
-
-
-##############################################################################
-#
-# _read_string()
-#
-# Create an XML::LibXML::Reader instance from a string. Used mainly for 
-# testing.
-#
-sub _read_string {
-
-    my $self   = shift;
-    my $string = shift;
-
-    my $xml_reader = XML::LibXML::Reader->new( string => $string );
-
-    $self->{_reader} = $xml_reader;
-
-    return $xml_reader;
-}
-
-
-##############################################################################
-#
-# _read_filehandle()
-#
-# Create an XML::LibXML::Reader instance from a filehandle. Used mainly for
-# testing.
-#
-sub _read_filehandle {
-
-    my $self       = shift;
-    my $filehandle = shift;
-
-    my $xml_reader = XML::LibXML::Reader->new( IO => $filehandle );
-
-    $self->{_reader} = $xml_reader;
-
-    return $xml_reader;
-}
-
-
-##############################################################################
-#
-# _read_all_nodes()
-#
-# Read all the nodes of a workbook.xml file using an XML::LibXML::Reader
-# instance.
-#
-sub _read_all_nodes {
-
-    my $self = shift;
-
-    while ( $self->{_reader}->read() ) {
-        $self->_read_node( $self->{_reader} );
-    }
-}
-
-
 ###############################################################################
 #
 # _set_relationships()
 #
-# TODO
+# Set up the relationship links between files and internal ids.
 #
 sub _set_relationships {
 
@@ -150,17 +72,12 @@ sub _set_relationships {
 
     my $rels_file = Excel::Reader::XLSX::Package::Relationship->new();
 
-    $rels_file->_read_file(
-        $self->{_package_dir} . 'xl/_rels/workbook.xml.rels' );
-
-    $rels_file->_read_all_nodes();
+    $rels_file->_parse_file(
+        $self->{_package_dir} . $self->{_files}->{_workbook_rels} );
 
     my %rels = $rels_file->_get_relationships();
     $self->{_rels} = \%rels;
 }
-
-
-
 
 
 ##############################################################################
@@ -187,7 +104,7 @@ sub _read_node {
         my $filename = $self->{_rels}->{$rel_id}->{_target};
 
 
-          push @{ $self->{_worksheet_attributes} },
+        push @{ $self->{_worksheet_attributes} },
           {
             _name     => $name,
             _sheet_id => $sheet_id,
@@ -197,11 +114,12 @@ sub _read_node {
     }
 }
 
+
 ###############################################################################
 #
 # worksheets()
 #
-# TODO
+# Return an array of Worksheet objects.
 #
 sub worksheets {
 
@@ -218,18 +136,18 @@ sub worksheets {
 
         $worksheet->{_name} = $attribute->{_name};
 
-
         $worksheet->_read_file(
-            $self->{_package_dir} . 'xl/'. $attribute->{_filename} );
+                $self->{_package_dir}
+              . $self->{_workbook_root}
+              . $attribute->{_filename}
+
+        );
 
         push @{ $self->{_worksheets} }, $worksheet;
     }
 
     return @{ $self->{_worksheets} };
 }
-
-
-
 
 
 1;

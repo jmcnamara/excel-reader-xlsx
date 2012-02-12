@@ -17,7 +17,7 @@ use warnings;
 use Exporter;
 use Archive::Zip;
 use OLE::Storage_Lite;
-use File::Temp qw(tempdir);
+use File::Temp;
 use Excel::Reader::XLSX::Workbook;
 use Excel::Reader::XLSX::Package::ContentTypes;
 use Excel::Reader::XLSX::Package::SharedStrings;
@@ -82,7 +82,7 @@ sub new {
 # Unzip the XLSX file and read the [Content_Types].xml file to get the
 # structure of the contained XML files.
 #
-# Return a valid Workbook object if sucessful. If not return undef and set
+# Return a valid Workbook object if successful. If not return undef and set
 # the error status.
 #
 sub read_file {
@@ -141,11 +141,14 @@ sub read_file {
 
     # Create a reader object to read the [Content_Types].
     my $content_types = Excel::Reader::XLSX::Package::ContentTypes->new();
-    $content_types->_read_file( $content_types_file );
-    $content_types->_read_all_nodes();
+    $content_types->_parse_file( $content_types_file );
 
     # Read the filenames from the [Content_Types].
     my %files = $content_types->_get_files();
+
+use Data::Dumper::Perltidy;
+print Dumper \%files;
+
 
     # Check that the listed files actually exist.
     my $files_exist = $self->_check_files_exist( $tempdir, %files );
@@ -167,8 +170,7 @@ sub read_file {
     # Read the sharedStrings if present. Only files with strings have one.
     if ( $files{_shared_strings} ) {
 
-        $shared_strings->_read_file( $tempdir . $files{_shared_strings} );
-        $shared_strings->_read_all_nodes();
+        $shared_strings->_parse_file( $tempdir . $files{_shared_strings} );
     }
 
     # Create a reader object for the workbook.xml file.
@@ -180,8 +182,7 @@ sub read_file {
     );
 
     # Read data from the workbook.xml file.
-    $workbook->_read_file( $tempdir . $files{_workbook} );
-    $workbook->_read_all_nodes();
+    $workbook->_parse_file( $tempdir . $files{_workbook} );
 
     # Store information in the reader object.
     $self->{_files}          = \%files;
@@ -253,7 +254,7 @@ sub _check_if_ole_file {
     # If getPpsTree() failed then this isn't an OLE file.
     return if !$pps;
 
-    # Loop throught the PPS children below the root.
+    # Loop through the PPS children below the root.
     for my $child_pps ( @{ $pps->{Child} } ) {
 
         my $pps_name = OLE::Storage_Lite::Ucs2Asc( $child_pps->{Name} );

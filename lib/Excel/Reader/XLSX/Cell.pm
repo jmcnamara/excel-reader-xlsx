@@ -55,7 +55,7 @@ sub value {
     my $self = shift;
 
     # If the cell type is a shared string convert the value index to a string.
-    if ( $self->{_type} eq 's' && !$self->{_converted_string}) {
+    if ( $self->{_type} eq 's' && !$self->{_converted_string} ) {
         $self->{_value} =
           $self->{_shared_strings}->_get_string( $self->{_value} );
 
@@ -82,7 +82,6 @@ sub row {
 }
 
 
-
 ###############################################################################
 #
 # col()
@@ -95,9 +94,6 @@ sub col {
 
     return $self->{_col};
 }
-
-
-
 
 
 1;

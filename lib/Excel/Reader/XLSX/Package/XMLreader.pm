@@ -18,7 +18,7 @@ use strict;
 use warnings;
 use Exporter;
 use Carp;
-use XML::LibXML::Reader;
+use XML::LibXML::Reader qw(:types);
 
 our @ISA     = qw(Exporter);
 our $VERSION = '0.00';
@@ -34,7 +34,7 @@ sub new {
 
     my $class = shift;
 
-    my $self = { _reader => undef, };
+    my $self = { _reader => undef };
 
     bless $self, $class;
 
@@ -115,6 +115,24 @@ sub _read_all_nodes {
     while ( $self->{_reader}->read() ) {
         $self->_read_node( $self->{_reader} );
     }
+}
+
+
+##############################################################################
+#
+# _parse_file()
+#
+# Shortcut for the most common use case: _read_file() + _read_all_nodes().
+#
+sub _parse_file {
+
+    my $self     = shift;
+    my $filename = shift;
+
+    my $xml_reader = $self->_read_file( $filename );
+    $self->_read_all_nodes();
+
+    return $xml_reader;
 }
 
 

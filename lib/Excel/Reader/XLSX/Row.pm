@@ -24,8 +24,7 @@ use Excel::Reader::XLSX::Package::XMLreader;
 our @ISA     = qw(Excel::Reader::XLSX::Package::XMLreader);
 our $VERSION = '0.00';
 
-our $FULL_DEPTH  = 1;
-our $RICH_STRING = 1;
+our $FULL_DEPTH = 1;
 
 
 ###############################################################################
@@ -36,8 +35,8 @@ our $RICH_STRING = 1;
 #
 sub new {
 
-    my $class  = shift;
-    my $self   = Excel::Reader::XLSX::Package::XMLreader->new();
+    my $class = shift;
+    my $self  = Excel::Reader::XLSX::Package::XMLreader->new();
 
     $self->{_reader}         = shift;
     $self->{_shared_strings} = shift;
@@ -128,7 +127,6 @@ sub next_cell {
 }
 
 
-
 ###############################################################################
 #
 # row_number()
@@ -143,7 +141,6 @@ sub row_number {
 }
 
 
-
 #
 # Internal methods.
 #
@@ -152,7 +149,7 @@ sub row_number {
 #
 # _range_to_rowcol($range)
 #
-# TODO.
+# Convert an Excel A1 style ref to a zero indexed row and column.
 #
 sub _range_to_rowcol {
 

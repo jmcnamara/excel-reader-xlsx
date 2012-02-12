@@ -17,15 +17,12 @@ use 5.008002;
 use strict;
 use warnings;
 use Carp;
-use XML::LibXML::Reader;
-use Excel::Reader::XLSX::Row;
 use Excel::Reader::XLSX::Package::XMLreader;
+use Excel::Reader::XLSX::Row;
+
 
 our @ISA     = qw(Excel::Reader::XLSX::Package::XMLreader);
 our $VERSION = '0.00';
-
-our $FULL_DEPTH  = 1;
-our $RICH_STRING = 1;
 
 
 ###############################################################################
@@ -39,7 +36,6 @@ sub new {
     my $class = shift;
     my $self  = Excel::Reader::XLSX::Package::XMLreader->new();
 
-#    $self->{_reader}         = shift;
     $self->{_shared_strings} = shift;
 
     bless $self, $class;
@@ -72,11 +68,13 @@ sub next_row {
 
     return $row;
 }
+
+
 ###############################################################################
 #
 # name()
 #
-# TODO
+# Return the worksheet name.
 #
 sub name {
 

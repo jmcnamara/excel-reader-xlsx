@@ -18,9 +18,10 @@ use strict;
 use warnings;
 use Exporter;
 use Carp;
-use XML::LibXML::Reader;
+use XML::LibXML::Reader qw(:types);
+use Excel::Reader::XLSX::Package::XMLreader;
 
-our @ISA     = qw(Exporter);
+our @ISA     = qw(Excel::Reader::XLSX::Package::XMLreader);
 our $VERSION = '0.00';
 
 
@@ -33,11 +34,9 @@ our $VERSION = '0.00';
 sub new {
 
     my $class = shift;
+    my $self  = Excel::Reader::XLSX::Package::XMLreader->new();
 
-    my $self = {
-        _reader       => undef,
-        _files        => {},
-    };
+    $self->{_files} = {};
 
     bless $self, $class;
 
@@ -47,85 +46,10 @@ sub new {
 
 ##############################################################################
 #
-# _read_file()
-#
-# Create an XML::LibXML::Reader instance from a file.
-#
-sub _read_file {
-
-    my $self     = shift;
-    my $filename = shift;
-
-    my $xml_reader = XML::LibXML::Reader->new( location => $filename );
-
-    $self->{_reader} = $xml_reader;
-
-    return $xml_reader;
-}
-
-
-##############################################################################
-#
-# _read_string()
-#
-# Create an XML::LibXML::Reader instance from a string. Used mainly for
-# testing.
-#
-sub _read_string {
-
-    my $self   = shift;
-    my $string = shift;
-
-    my $xml_reader = XML::LibXML::Reader->new( string => $string );
-
-    $self->{_reader} = $xml_reader;
-
-    return $xml_reader;
-}
-
-
-##############################################################################
-#
-# _read_filehandle()
-#
-# Create an XML::LibXML::Reader instance from a filehandle. Used mainly for
-# testing.
-#
-sub _read_filehandle {
-
-    my $self       = shift;
-    my $filehandle = shift;
-
-    my $xml_reader = XML::LibXML::Reader->new( IO => $filehandle );
-
-    $self->{_reader} = $xml_reader;
-
-    return $xml_reader;
-}
-
-
-##############################################################################
-#
-# _read_all_nodes()
-#
-# Read all the nodes of a ContentTypes.xml file using an XML::LibXML::Reader
-# instance.
-#
-sub _read_all_nodes {
-
-    my $self = shift;
-
-    while ( $self->{_reader}->read() ) {
-        $self->_read_node( $self->{_reader} );
-    }
-}
-
-
-##############################################################################
-#
 # _read_node()
 #
 # Callback function to read the <Types> attributes of the ContentTypes file.
+# We currently only read files/types that we are interested in.
 #
 sub _read_node {
 
@@ -136,8 +60,8 @@ sub _read_node {
     return unless $node->name eq 'Override';
 
 
-    my $part_name    = $node->getAttribute('PartName');
-    my $content_type = $node->getAttribute('ContentType');
+    my $part_name    = $node->getAttribute( 'PartName' );
+    my $content_type = $node->getAttribute( 'ContentType' );
 
 
     # Strip leading directory separator from filename.
@@ -186,17 +110,15 @@ sub _read_node {
 #
 # _get_files()
 #
-# TODO
+# Get a hash of of the files read from the ContentTypes file.
 #
 sub _get_files {
 
     my $self = shift;
 
-    return %{$self->{_files}};
+    return %{ $self->{_files} };
 
 }
-
-
 
 
 1;
