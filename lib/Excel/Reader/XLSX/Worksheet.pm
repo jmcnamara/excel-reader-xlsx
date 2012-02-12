@@ -58,10 +58,18 @@ sub next_row {
     my $has_row = $self->{_reader}->nextElement( 'row' );
 
     if ( $has_row ) {
+
+        my $node = $self->{_reader};
+        my $row_number = $node->getAttribute( 'r' ) || 0;
+
+        # Convert to zero indexed value.
+        $row_number--;
+
         $row = Excel::Reader::XLSX::Row->new(
 
             $self->{_reader},
             $self->{_shared_strings},
+            $row_number,
         );
 
     }

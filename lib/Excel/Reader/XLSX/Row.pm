@@ -40,6 +40,7 @@ sub new {
 
     $self->{_reader}         = shift;
     $self->{_shared_strings} = shift;
+    $self->{_row_number}     = shift;
     $self->{_row_is_empty}   = $self->{_reader}->isEmptyElement();
     $self->{_end_of_row}     = 0;
 
@@ -129,11 +130,11 @@ sub next_cell {
 
 ###############################################################################
 #
-# row_number()
+# number()
 #
 # Return the cell row number, zero-indexed.
 #
-sub row_number {
+sub number {
 
     my $self = shift;
 

@@ -1,0 +1,50 @@
+{
+   "caption"     : "Test reading row data.",
+   "description" : "Simple test of reading row numbers from multiple worksheets.",
+   "xlsx_file"   : "data01.xlsx",
+   "expected" : {
+      "Sheet1" : [
+         {
+            "row_number" : 0
+         },
+         {
+            "row_number" : 1
+         },
+         {
+            "row_number" : 2
+         },
+         {
+            "row_number" : 3
+         },
+         {
+            "row_number" : 4
+         },
+         {
+            "row_number" : 5
+         }
+      ],
+      "Sheet2" : [],
+      "Sheet3" : [
+         {
+            "row_number" : 0
+         },
+         {
+            "row_number" : 1
+         },
+         {
+            "row_number" : 2
+         },
+         {
+            "row_number" : 3
+         }
+      ],
+      "Sheet4" : [
+         {
+            "row_number" : 0
+         },
+         {
+            "row_number" : 2
+         }
+      ]
+   }
+}
