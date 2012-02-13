@@ -317,11 +317,171 @@ Excel::Reader::XLSX - Read data from an Excel 2007+/XLSX format file.
 
 =head1 SYNOPSIS
 
-TODO.
+A simple Excel XLSX file reader based on C<Excel::Reader::XLSX>:
+
+    use strict;
+    use warnings;
+    use Excel::Reader::XLSX;
+
+    my $reader   = Excel::Reader::XLSX->new();
+    my $workbook = $reader->read_file( 'Book1.xlsx' );
+
+    if ( !defined $workbook ) {
+        die $reader->error(), "\n";
+    }
+
+    for my $worksheet ( $workbook->worksheets() ) {
+
+        my $sheetname = $worksheet->name();
+
+        print "Sheet = $sheetname\n";
+
+        while ( my $row = $worksheet->next_row() ) {
+
+            while ( my $cell = $row->next_cell() ) {
+
+                my $row   = $cell->row();
+                my $col   = $cell->col();
+                my $value = $cell->value();
+
+                print "  Cell ($row, $col) = $value\n";
+            }
+        }
+    }
+
+    __END__
+
+
 
 =head1 DESCRIPTION
 
-TODO.
+C<Excel::Reader::XLSX> is a fast and lightweight parser for Excel 2007+ XLSX files.
+
+The XLSX format is the Office Open XML (OOXML) format used by Excel 2007 and later.
+
+=head1 Reader Methods
+
+TODO
+
+     reader
+     +- workbook
+        +- worksheet
+           +- row
+              +- cell
+
+
+    read_file()
+    error()
+    error_code()
+
+=head2 read_file()
+
+TODO
+
+
+=head2 error()
+
+TODO
+
+
+=head2 error_code()
+
+TODO
+
+
+
+=head1 Workbook Methods
+
+TODO
+
+
+    worksheets()
+
+
+=head2 worksheets()
+
+TODO
+
+
+=head1 Worksheet Methods
+
+TODO
+
+     name()
+     next_row()
+
+
+=head2 name()
+
+TODO
+
+
+=head2 next_row()
+
+TODO
+
+
+=head1 Row Methods
+
+TODO
+
+    values()
+    next_cell()
+    number()
+    previous_number()
+
+
+=head2 values()
+
+TODO
+
+
+=head2 next_cell()
+
+TODO
+
+
+=head2 number()
+
+TODO
+
+
+=head2 previous_number()
+
+TODO
+
+
+=head1 Cell Methods
+
+TODO
+
+    value()
+    row()
+    col()
+
+=head2 value()
+
+TODO
+
+
+=head2 row()
+
+TODO
+
+
+=head2 col()
+
+TODO
+
+=head1 Example
+
+TODO
+
+    Some example here
+
+=head1 Rationale
+
+TODO
 
 
 =head1 TODO
