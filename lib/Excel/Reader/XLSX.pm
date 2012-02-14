@@ -50,7 +50,6 @@ our @error_strings = (
     'File missing subfile',               # 6
     'File has no [Content_Types].xml',    # 7
     'File has no workbook.xml',           # 8
-);
 
 
 ###############################################################################
@@ -361,14 +360,19 @@ The XLSX format is the Office Open XML (OOXML) format used by Excel 2007 and lat
 
 =head1 Reader Methods
 
-TODO
+The C<Excel::Reader::XLSX> constructor returns a Reader object that is used to read and Excel XLSX file:
 
-     reader
-     +- workbook
-        +- worksheet
-           +- row
-              +- cell
+    my $reader   = Excel::Reader::XLSX->new();
 
+This is turn is used to return sub-objects that represent the functional parts of and Excel spreadsheet:
+
+     Reader
+       +- Workbook
+          +- Worksheet
+             +- Row
+                +- Cell
+
+The C<Excel::Reader::XLSX> Reader object has the following methods which are explained below:
 
     read_file()
     error()
@@ -376,54 +380,159 @@ TODO
 
 =head2 read_file()
 
-TODO
+The C<read_file> Reader method is used to read and Excel XLSX file and return a L<Workbook> object:
 
+    my $reader   = Excel::Reader::XLSX->new();
+    my $workbook = $reader->read_file( 'Book1.xlsx' );
 
 =head2 error()
 
-TODO
+The C<error()> Reader method returns an error string if C<read_file()> fails:
+
+    my $reader   = Excel::Reader::XLSX->new();
+    my $workbook = $reader->read_file( 'Book1.xlsx' );
+
+    if ( !defined $workbook ) {
+        die $reader->error(), "\n";
+    }
+
+If you wish to generate you own error string you can use the C<error_code()> method instead (see below). The C<error()> and C<error_code()> values are as follows:
+
+    error()                              error_code()
+    =======                              ============
+    ''                                   0
+    'File not found'                     1
+    'File is xls not xlsx'               2
+    'File is encrypted xlsx'             3
+    'File is unknown OLE doc type'       4
+    'File has zip error'                 5
+    'File missing subfile'               6
+    'File has no [Content_Types].xml'    7
+    'File has no workbook.xml'           8
+
+
+The C<error_code()> method is explained below.
 
 
 =head2 error_code()
 
-TODO
+The C<error_code()> Reader method returns an error code if C<read_file()> fails:
+
+    my $reader   = Excel::Reader::XLSX->new();
+    my $workbook = $reader->read_file( 'Book1.xlsx' );
+
+    if ( !defined $workbook ) {
+        die "Got error code ", $parser->error_code, "\n";
+    }
+
+This method is useful if you wish to employ you own error strings or error handling methods.
 
 
 
 =head1 Workbook Methods
 
-TODO
+An C<Excel::Reader::XLSX> C<Workbook> object is returned by the C<read_file()> Reader method:
 
+    my $reader   = Excel::Reader::XLSX->new();
+    my $workbook = $reader->read_file( 'Book1.xlsx' );
+
+The C<Workbook> object has the following position in the C<Excel::Reader::XLSX> heirarchy:
+
+     Reader
+       +- Workbook
+          +- Worksheet
+             +- Row
+                +- Cell
+
+The C<Workbook> object has the following methods which are explained below:
 
     worksheets()
+    worksheet()
 
 
 =head2 worksheets()
 
-TODO
+The Workbook C<worksheets()> method returns an array of
+L<Worksheet> objects. This method is generally used to iterate through
+all the worksheets in an Excel workbook and read the data:
+
+    for my $worksheet ( $workbook->worksheets() ) {
+      ...
+    }
+
+
+=head2 worksheet()
+
+The Workbook C<worksheet()> method returns a single L<Worksheet>
+object using the sheetname or the the zero based index.
+
+    my $worksheet = $workbook->worksheet( 'Sheet1' );
+
+    # Or via the index.
+
+    my $worksheet = $workbook->worksheet( 0 );
 
 
 =head1 Worksheet Methods
 
-TODO
+The C<Worksheet> object has the following position in the C<Excel::Reader::XLSX> heirarchy:
+
+     Reader
+       +- Workbook
+          +- Worksheet
+             +- Row
+                +- Cell
+
+The C<Worksheet> object has the following methods which are explained below:
 
      name()
+     index()
      next_row()
 
 
 =head2 name()
 
-TODO
+The C<name()> method returns the name of the Worksheet object.
 
+    my $sheetname = $worksheet->name();
+
+=head2 index()
+
+The C<index()> method returns the zero-based index of the Worksheet
+object.
+
+    my $sheet_index = $worksheet->index();
 
 =head2 next_row()
 
-TODO
+The C<next_row()> method returns a L<Row> object representing the next
+row in the worksheet.
+
+        my $row = $worksheet->next_row();
+
+If there are no more rows containing data or formatting in the
+worksheet then C<next_row()> returns C<undef>. This allows you to
+iterate over all the rows in a worksheet as follows:
+
+        while ( my $row = $worksheet->next_row() ) {
+        ...
+        }
+
+Note, the "next" row in the worksheet may not be the sequentially next
+row. TODO.
 
 
 =head1 Row Methods
 
-TODO
+The C<Row> object has the following position in the C<Excel::Reader::XLSX> heirarchy:
+
+     Reader
+       +- Workbook
+          +- Worksheet
+             +- Row
+                +- Cell
+
+The C<Row> object has the following methods which are explained below:
 
     values()
     next_cell()
@@ -453,7 +562,15 @@ TODO
 
 =head1 Cell Methods
 
-TODO
+The C<Cell> object has the following position in the C<Excel::Reader::XLSX> heirarchy:
+
+     Reader
+       +- Workbook
+          +- Worksheet
+             +- Row
+                +- Cell
+
+The C<Cell> object has the following methods which are explained below:
 
     value()
     row()
@@ -462,16 +579,22 @@ TODO
 =head2 value()
 
 TODO
+    my $value = $cell->value();
 
 
 =head2 row()
 
 TODO
 
+    my $row   = $cell->row();
+
 
 =head2 col()
 
 TODO
+
+    my $col   = $cell->col();
+
 
 =head1 Example
 

@@ -39,5 +39,17 @@ if ( $ExtUtils::MakeMaker::VERSION ge '6.30_01' ) {
     $params{LICENSE} = 'perl';
 }
 
-
 WriteMakefile(%params);
+
+# Add other targets to the makefile.
+package MY;
+
+sub postamble {
+"
+localdoc : \$(VERSION_FROM)
+	pod2cpanhtml \$(VERSION_FROM) > ~/tmp/pod2html.html
+"
+}
+
+
+
