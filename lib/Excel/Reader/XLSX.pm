@@ -50,7 +50,7 @@ our @error_strings = (
     'File missing subfile',               # 6
     'File has no [Content_Types].xml',    # 7
     'File has no workbook.xml',           # 8
-
+);
 
 ###############################################################################
 #

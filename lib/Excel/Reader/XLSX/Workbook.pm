@@ -125,9 +125,24 @@ sub worksheets {
 
     my $self = shift;
 
-    if ( defined $self->{_worksheets} ) {
-        return @{ $self->{_worksheets} };
+    if ( !defined $self->{_worksheets} ) {
+        $self->_read_worksheets();
     }
+
+    return @{ $self->{_worksheets} };
+}
+
+###############################################################################
+#
+# _read_worksheets()
+#
+# Parse the workbook and set up the Worksheet objects.
+#
+sub _read_worksheets {
+
+    my $self = shift;
+
+    return if defined $self->{_worksheets};
 
     for my $attribute ( @{ $self->{_worksheet_attributes} } ) {
 
@@ -145,9 +160,8 @@ sub worksheets {
 
         push @{ $self->{_worksheets} }, $worksheet;
     }
-
-    return @{ $self->{_worksheets} };
 }
+
 
 
 1;
