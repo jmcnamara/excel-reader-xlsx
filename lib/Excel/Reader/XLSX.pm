@@ -312,11 +312,11 @@ __END__
 
 =head1 NAME
 
-Excel::Reader::XLSX - Read data from an Excel 2007+/XLSX format file.
+Excel::Reader::XLSX - Read data from an Excel 2007+ XLSX format file.
 
 =head1 SYNOPSIS
 
-A simple Excel XLSX file reader based on C<Excel::Reader::XLSX>:
+The following is a simple Excel XLSX file reader based on C<Excel::Reader::XLSX>:
 
     use strict;
     use warnings;
@@ -360,11 +360,22 @@ The XLSX format is the Office Open XML (OOXML) format used by Excel 2007 and lat
 
 =head1 Reader Methods
 
-The C<Excel::Reader::XLSX> constructor returns a Reader object that is used to read and Excel XLSX file:
+The C<Excel::Reader::XLSX> constructor returns a Reader object that is used to read an Excel XLSX file:
 
     my $reader   = Excel::Reader::XLSX->new();
+    my $workbook = $reader->read_file( 'Book1.xlsx' );
+    die $reader->error() if !defined $workbook;
 
-This is turn is used to return sub-objects that represent the functional parts of and Excel spreadsheet:
+    for my $worksheet ( $workbook->worksheets() ) {
+        while ( my $row = $worksheet->next_row() ) {
+            while ( my $cell = $row->next_cell() ) {
+                my $value = $cell->value();
+                ...
+            }
+        }
+    }
+
+This is turn is used to return sub-objects that represent the functional parts of an Excel spreadsheet:
 
      Reader
        +- Workbook
@@ -372,7 +383,7 @@ This is turn is used to return sub-objects that represent the functional parts o
              +- Row
                 +- Cell
 
-The C<Excel::Reader::XLSX> Reader object has the following methods which are explained below:
+The C<Excel::Reader::XLSX> Reader object has the following methods:
 
     read_file()
     error()
@@ -380,10 +391,11 @@ The C<Excel::Reader::XLSX> Reader object has the following methods which are exp
 
 =head2 read_file()
 
-The C<read_file> Reader method is used to read and Excel XLSX file and return a L<Workbook> object:
+The C<read_file> Reader method is used to read an Excel XLSX file and return a C<Workbook> object:
 
     my $reader   = Excel::Reader::XLSX->new();
     my $workbook = $reader->read_file( 'Book1.xlsx' );
+    ...
 
 =head2 error()
 
@@ -395,8 +407,9 @@ The C<error()> Reader method returns an error string if C<read_file()> fails:
     if ( !defined $workbook ) {
         die $reader->error(), "\n";
     }
+    ...
 
-If you wish to generate you own error string you can use the C<error_code()> method instead (see below). The C<error()> and C<error_code()> values are as follows:
+The C<error()> strings and associated C<error_code()> numbers are:
 
     error()                              error_code()
     =======                              ============
@@ -411,9 +424,6 @@ If you wish to generate you own error string you can use the C<error_code()> met
     'File has no workbook.xml'           8
 
 
-The C<error_code()> method is explained below.
-
-
 =head2 error_code()
 
 The C<error_code()> Reader method returns an error code if C<read_file()> fails:
@@ -425,35 +435,26 @@ The C<error_code()> Reader method returns an error code if C<read_file()> fails:
         die "Got error code ", $parser->error_code, "\n";
     }
 
-This method is useful if you wish to employ you own error strings or error handling methods.
-
+This method is useful if you wish to use you own error strings or error handling methods.
 
 
 =head1 Workbook Methods
 
-An C<Excel::Reader::XLSX> C<Workbook> object is returned by the C<read_file()> Reader method:
+An C<Excel::Reader::XLSX> C<Workbook> object is returned by the Reader C<read_file()> method:
 
     my $reader   = Excel::Reader::XLSX->new();
     my $workbook = $reader->read_file( 'Book1.xlsx' );
+    ...
 
-The C<Workbook> object has the following position in the C<Excel::Reader::XLSX> heirarchy:
-
-     Reader
-       +- Workbook
-          +- Worksheet
-             +- Row
-                +- Cell
-
-The C<Workbook> object has the following methods which are explained below:
+The C<Workbook> object has the following methods:
 
     worksheets()
     worksheet()
 
-
 =head2 worksheets()
 
 The Workbook C<worksheets()> method returns an array of
-L<Worksheet> objects. This method is generally used to iterate through
+C<Worksheet> objects. This method is generally used to iterate through
 all the worksheets in an Excel workbook and read the data:
 
     for my $worksheet ( $workbook->worksheets() ) {
@@ -463,8 +464,8 @@ all the worksheets in an Excel workbook and read the data:
 
 =head2 worksheet()
 
-The Workbook C<worksheet()> method returns a single L<Worksheet>
-object using the sheetname or the the zero based index.
+The Workbook C<worksheet()> method returns a single C<Worksheet>
+object using the sheetname or the zero based index.
 
     my $worksheet = $workbook->worksheet( 'Sheet1' );
 
@@ -475,15 +476,17 @@ object using the sheetname or the the zero based index.
 
 =head1 Worksheet Methods
 
-The C<Worksheet> object has the following position in the C<Excel::Reader::XLSX> heirarchy:
+The C<Worksheet> object is returned from a C<Workbook> object and is used to access row data.
 
-     Reader
-       +- Workbook
-          +- Worksheet
-             +- Row
-                +- Cell
+    my $reader   = Excel::Reader::XLSX->new();
+    my $workbook = $reader->read_file( 'Book1.xlsx' );
+    die $reader->error() if !defined $workbook;
 
-The C<Worksheet> object has the following methods which are explained below:
+    for my $worksheet ( $workbook->worksheets() ) {
+        ...
+    }
+
+The C<Worksheet> object has the following methods:
 
      name()
      index()
@@ -505,72 +508,116 @@ object.
 
 =head2 next_row()
 
-The C<next_row()> method returns a L<Row> object representing the next
+The C<next_row()> method returns a C<Row> object representing the next
 row in the worksheet.
 
         my $row = $worksheet->next_row();
 
-If there are no more rows containing data or formatting in the
-worksheet then C<next_row()> returns C<undef>. This allows you to
-iterate over all the rows in a worksheet as follows:
+It returns C<undef> if there are no more rows containing data or formatting in the worksheet. This allows you to iterate over all the rows in a worksheet as follows:
 
-        while ( my $row = $worksheet->next_row() ) {
-        ...
-        }
+        while ( my $row = $worksheet->next_row() ) { ... }
 
-Note, the "next" row in the worksheet may not be the sequentially next
-row. TODO.
+Note, the C<next_row()> method returns the next row in the file. This may not be the next sequential row.
 
 
 =head1 Row Methods
 
-The C<Row> object has the following position in the C<Excel::Reader::XLSX> heirarchy:
+The C<Row> object is returned from a C<Worksheet> object and is use to access cells in the worksheet.
 
-     Reader
-       +- Workbook
-          +- Worksheet
-             +- Row
-                +- Cell
+    my $reader   = Excel::Reader::XLSX->new();
+    my $workbook = $reader->read_file( 'Book1.xlsx' );
+    die $reader->error() if !defined $workbook;
 
-The C<Row> object has the following methods which are explained below:
+    for my $worksheet ( $workbook->worksheets() ) {
+        while ( my $row = $worksheet->next_row() ) {
+            ...
+        }
+    }
+
+The C<Row> object has the following methods:
 
     values()
     next_cell()
-    number()
-    previous_number()
+    row_number()
 
 
 =head2 values()
 
-TODO
+The C<values())> method returns an array of values for a row from the first column up to the last column containing data. Cells with no data value return an empty string C<''>.
+
+    my @values = $row->values();
+
+For example if we extracted data for the first row of the following spreadsheet we would get the values shown below:
+
+     -----------------------------------------------------------
+    |   |     A     |     B     |     C     |     D     | ...
+     -----------------------------------------------------------
+    | 1 |           | Foo       |           | Bar       | ...
+    | 2 |           |           |           |           | ...
+    | 3 |           |           |           |           | ...
+
+    # Code:
+    ...
+    my $row = $worksheet->next_row();
+    my @values = $row->values();
+    ...
+
+    # @values contains ( '', 'Foo', '', 'Bar' )
 
 
 =head2 next_cell()
 
-TODO
+The C<next_cell> method returns the next, non-blank cell in the current row.
 
+    my $cell = $row->next_cell();
 
-=head2 number()
+It is usually used with a while loop. For example if we extracted data for the first row of the following spreadsheet we would get the values shown below:
 
-TODO
+     -----------------------------------------------------------
+    |   |     A     |     B     |     C     |     D     | ...
+     -----------------------------------------------------------
+    | 1 |           | Foo       |           | Bar       | ...
+    | 2 |           |           |           |           | ...
+    | 3 |           |           |           |           | ...
 
+    # Code:
+    ...
+    while ( my $cell = $row->next_cell() ) {
+        my $value = $cell->value();
+        print $value, "\n";
+    }
+    ...
 
-=head2 previous_number()
+    # Output:
+    Foo
+    Bar
 
-TODO
+=head2 row_number()
+
+The C<row_number()> method returns the zero-indexed row number for the current row:
+
+    my $row = $worksheet->next_row();
+    print $row->row_number(), "\n";
 
 
 =head1 Cell Methods
 
-The C<Cell> object has the following position in the C<Excel::Reader::XLSX> heirarchy:
+The C<Cell> object is used to extract data from Excel cells:
 
-     Reader
-       +- Workbook
-          +- Worksheet
-             +- Row
-                +- Cell
+    my $reader   = Excel::Reader::XLSX->new();
+    my $workbook = $reader->read_file( 'Book1.xlsx' );
+    die $reader->error() if !defined $workbook;
 
-The C<Cell> object has the following methods which are explained below:
+    for my $worksheet ( $workbook->worksheets() ) {
+        while ( my $row = $worksheet->next_row() ) {
+            while ( my $cell = $row->next_cell() ) {
+                my $value = $cell->value();
+               ...
+            }
+        }
+    }
+
+The C<Cell> object has the following methods:
 
     value()
     row()
@@ -579,6 +626,7 @@ The C<Cell> object has the following methods which are explained below:
 =head2 value()
 
 TODO
+
     my $value = $cell->value();
 
 
@@ -586,14 +634,14 @@ TODO
 
 TODO
 
-    my $row   = $cell->row();
+    my $row = $cell->row();
 
 
 =head2 col()
 
 TODO
 
-    my $col   = $cell->col();
+    my $col = $cell->col();
 
 
 =head1 Example

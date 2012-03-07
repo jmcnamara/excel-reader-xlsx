@@ -2,7 +2,7 @@
 #
 # Tests for Excel::Writer::XLSX.
 #
-# reverse('©'), February 2012, John McNamara, jmcnamara@cpan.org
+# reverse('(c)'), February 2012, John McNamara, jmcnamara@cpan.org
 #
 
 use lib 't/lib';
@@ -41,7 +41,7 @@ for my $worksheet ( $workbook->worksheets() ) {
 
     while ( my $row = $worksheet->next_row() ) {
 
-        my $row_number = $row->number();
+        my $row_number = $row->row_number();
 
         push @{ $got->{$sheetname} }, { row_number => $row_number };
     }

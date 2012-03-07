@@ -170,11 +170,11 @@ sub values {
 
 ###############################################################################
 #
-# number()
+# row_number()
 #
 # Return the row number, zero-indexed.
 #
-sub number {
+sub row_number {
 
     my $self = shift;
 
@@ -260,7 +260,7 @@ John McNamara jmcnamara@cpan.org
 
 =head1 COPYRIGHT
 
-� MMXII, John McNamara.
+Copyright MMXII, John McNamara.
 
 All Rights Reserved. This module is free software. It may be used, redistributed and/or modified under the same terms as Perl itself.
 

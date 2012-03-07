@@ -4,7 +4,7 @@ package TestFunctions;
 #
 # TestFunctions - Helper functions for Excel::Reader::XLSX test cases.
 #
-# reverse('�'), January 2012, John McNamara, jmcnamara@cpan.org
+# reverse('(c)'), January 2012, John McNamara, jmcnamara@cpan.org
 #
 
 use 5.008002;
