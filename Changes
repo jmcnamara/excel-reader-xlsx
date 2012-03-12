@@ -5,6 +5,8 @@ Revision history for Perl module Excel::Reader::XLSX.
 ! Bug fix.
 
 
+NOTE: This software is designated as alpha quality until this notice is removed.
+
 0.01 January XX 2011
 
     First CPAN release.

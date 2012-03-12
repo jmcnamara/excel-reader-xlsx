@@ -4,7 +4,7 @@ package Excel::Reader::XLSX;
 #
 # WriteExcelXML.
 #
-# Excel::Reader::XLSX - Read data from an Excel 2007+/XLSX format file.
+# Excel::Reader::XLSX - Efficient data reader for the Excel XLSX file format.
 #
 # Copyright 2012, John McNamara, jmcnamara@cpan.org
 #
@@ -312,11 +312,11 @@ __END__
 
 =head1 NAME
 
-Excel::Reader::XLSX - Read data from an Excel 2007+ XLSX format file.
+Excel::Reader::XLSX - Efficient data reader for the Excel XLSX file format.
 
 =head1 SYNOPSIS
 
-The following is a simple Excel XLSX file reader based on C<Excel::Reader::XLSX>:
+The following is a simple Excel XLSX file reader using C<Excel::Reader::XLSX>:
 
     use strict;
     use warnings;
@@ -354,11 +354,11 @@ The following is a simple Excel XLSX file reader based on C<Excel::Reader::XLSX>
 
 =head1 DESCRIPTION
 
-C<Excel::Reader::XLSX> is a fast and lightweight parser for Excel 2007+ XLSX files.
+C<Excel::Reader::XLSX> is a fast and lightweight parser for Excel XLSX files. XLSX is the Office Open XML, OOXML, format used by Excel 2007 and later.
 
-The XLSX format is the Office Open XML (OOXML) format used by Excel 2007 and later.
+B<Note: This software is designated as alpha quality until this notice is removed.> The API shouldn't change but functionality is currently limited.
 
-=head1 Reader Methods
+=head1 Reader
 
 The C<Excel::Reader::XLSX> constructor returns a Reader object that is used to read an Excel XLSX file:
 
@@ -375,7 +375,7 @@ The C<Excel::Reader::XLSX> constructor returns a Reader object that is used to r
         }
     }
 
-This is turn is used to return sub-objects that represent the functional parts of an Excel spreadsheet:
+The C<Excel::Reader::XLSX> object is used to return sub-objects that represent the functional parts of an Excel spreadsheet, L</Workbook>, L</Worksheet>, L</Row> and L</Cell>:
 
      Reader
        +- Workbook
@@ -383,7 +383,7 @@ This is turn is used to return sub-objects that represent the functional parts o
              +- Row
                 +- Cell
 
-The C<Excel::Reader::XLSX> Reader object has the following methods:
+The C<Reader> object has the following methods:
 
     read_file()
     error()
@@ -396,6 +396,8 @@ The C<read_file> Reader method is used to read an Excel XLSX file and return a C
     my $reader   = Excel::Reader::XLSX->new();
     my $workbook = $reader->read_file( 'Book1.xlsx' );
     ...
+
+It is recommended that the success of the C<read_file()> method is always checked using one of the error checking methods below.
 
 =head2 error()
 
@@ -438,7 +440,9 @@ The C<error_code()> Reader method returns an error code if C<read_file()> fails:
 This method is useful if you wish to use you own error strings or error handling methods.
 
 
-=head1 Workbook Methods
+=head1 Workbook
+
+=head2 Workbook Methods
 
 An C<Excel::Reader::XLSX> C<Workbook> object is returned by the Reader C<read_file()> method:
 
@@ -474,9 +478,11 @@ object using the sheetname or the zero based index.
     my $worksheet = $workbook->worksheet( 0 );
 
 
-=head1 Worksheet Methods
+=head1 Worksheet
 
-The C<Worksheet> object is returned from a C<Workbook> object and is used to access row data.
+=head2 Worksheet Methods
+
+The C<Worksheet> object is returned from a L</Workbook> object and is used to access row data.
 
     my $reader   = Excel::Reader::XLSX->new();
     my $workbook = $reader->read_file( 'Book1.xlsx' );
@@ -488,10 +494,22 @@ The C<Worksheet> object is returned from a C<Workbook> object and is used to acc
 
 The C<Worksheet> object has the following methods:
 
+     next_row()
      name()
      index()
-     next_row()
 
+=head2 next_row()
+
+The C<next_row()> method returns a L</Row> object representing the next
+row in the worksheet.
+
+        my $row = $worksheet->next_row();
+
+It returns C<undef> if there are no more rows containing data or formatting in the worksheet. This allows you to iterate over all the rows in a worksheet as follows:
+
+        while ( my $row = $worksheet->next_row() ) { ... }
+
+Note, the C<next_row()> method returns the next row in the file. This may not be the next sequential row.
 
 =head2 name()
 
@@ -506,23 +524,12 @@ object.
 
     my $sheet_index = $worksheet->index();
 
-=head2 next_row()
 
-The C<next_row()> method returns a C<Row> object representing the next
-row in the worksheet.
+=head1 Row
 
-        my $row = $worksheet->next_row();
+=head2 Row Methods
 
-It returns C<undef> if there are no more rows containing data or formatting in the worksheet. This allows you to iterate over all the rows in a worksheet as follows:
-
-        while ( my $row = $worksheet->next_row() ) { ... }
-
-Note, the C<next_row()> method returns the next row in the file. This may not be the next sequential row.
-
-
-=head1 Row Methods
-
-The C<Row> object is returned from a C<Worksheet> object and is use to access cells in the worksheet.
+The C<Row> object is returned from a L</Worksheet> object and is use to access cells in the worksheet.
 
     my $reader   = Excel::Reader::XLSX->new();
     my $workbook = $reader->read_file( 'Book1.xlsx' );
@@ -600,7 +607,9 @@ The C<row_number()> method returns the zero-indexed row number for the current r
     print $row->row_number(), "\n";
 
 
-=head1 Cell Methods
+=head1 Cell
+
+=head2 Cell Methods
 
 The C<Cell> object is used to extract data from Excel cells:
 
@@ -623,43 +632,121 @@ The C<Cell> object has the following methods:
     row()
     col()
 
+For example if we extracted the data for the cells in the first row of the following spreadsheet we would get the values shown below:
+
+     -----------------------------------------------------------
+    |   |     A     |     B     |     C     |     D     | ...
+     -----------------------------------------------------------
+    | 1 |           | Foo       |           | Bar       | ...
+    | 2 |           |           |           |           | ...
+    | 3 |           |           |           |           | ...
+
+    # Code:
+    ...
+    while ( my $row = $worksheet->next_row() ) {
+        while ( my $cell = $row->next_cell() ) {
+            my $row   = $cell->row();
+            my $col   = $cell->col();
+            my $value = $cell->value();
+
+            print "Cell ($row, $col) = $value\n";
+        }
+    }
+    ...
+
+    # Output:
+    Cell (0, 1) = Foo
+    Cell (0, 2) = Bar
+
+
 =head2 value()
 
-TODO
+The Cell C<value()> method returns the unformatted value from the cell.
 
     my $value = $cell->value();
+
+The "value" of the cell can be a string or  a number. In the case of a formula it returns the result of the formula and not the formal string. For dates it returns the numeric serial date.
 
 
 =head2 row()
 
-TODO
+The Cell C<row()> method returns the zero-indexed row number of the cell.
 
     my $row = $cell->row();
 
 
 =head2 col()
 
-TODO
+The Cell C<col()> method returns the zero-indexed column number of the cell.
 
     my $col = $cell->col();
 
 
 =head1 Example
 
-TODO
+Simple example of iterating through all worksheets in a workbook and printing out values from cells that contain data.
 
-    Some example here
+    use strict;
+    use warnings;
+    use Excel::Reader::XLSX;
+
+    my $reader   = Excel::Reader::XLSX->new();
+    my $workbook = $reader->read_file( 'Book1.xlsx' );
+
+    if ( !defined $workbook ) {
+        die $reader->error(), "\n";
+    }
+
+    for my $worksheet ( $workbook->worksheets() ) {
+
+        my $sheetname = $worksheet->name();
+
+        print "Sheet = $sheetname\n";
+
+        while ( my $row = $worksheet->next_row() ) {
+
+            while ( my $cell = $row->next_cell() ) {
+
+                my $row   = $cell->row();
+                my $col   = $cell->col();
+                my $value = $cell->value();
+
+                print "  Cell ($row, $col) = $value\n";
+            }
+        }
+    }
 
 =head1 Rationale
 
-TODO
+The rationale for this module is to have a fast memory efficient module for reading XLSX files based on my experience of user requirements as the maintainer of Spreadsheet::ParseExcel.
+
+
+=head1 See Also
+
+Spreadsheet::XLSX, an XLSX reader using the old Spreadsheet::ParseExcel hash based interface: L<http://search.cpan.org/dist/Spreadsheet-XLSX/>.
+
+SimpleXlsx, a "rudimentary extension to allow parsing of information stored in Microsoft Excel XLSX spreadsheets": L<http://search.cpan.org/dist/SimpleXlsx/>.
+
+Excel::Writer::XLSX, an XLSX file writer based on the Spreadsheet::WriteExcel interface: L<http://search.cpan.org/dist/Excel-Writer-XLSX/>.
 
 
 =head1 TODO
 
+There are a lot of features still to be added. This module is very much a work in progress.
+
 =over
 
 =item * Reading from filehandles.
+
+=item * Option to read sequential rows via C<next_row()>.
+
+=item * Option to read dates instead of raw serial style numbers. This is actually harder than it would seem due to the XLSX format.
+
+=item * Option to read formulas, urls, comments, images.
+
+=item * Spreadsheet::ParseExcel style interface.
+
+=item * Direct cell access.
 
 =back
 

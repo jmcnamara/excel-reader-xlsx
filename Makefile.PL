@@ -21,7 +21,7 @@ my %resources = (
 
 my %params = (
     'AUTHOR'        => 'John McNamara (jmcnamara@cpan.org)',
-    'ABSTRACT'      => 'Read data from an Excel 2007+/XLSX format file.',
+    'ABSTRACT'      => 'Efficient data reader for the Excel XLSX file format.',
     'NAME'          => 'Excel::Reader::XLSX',
     'VERSION_FROM'  => 'lib/Excel/Reader/XLSX.pm',
     'NEEDS_LINKING' => 0,
