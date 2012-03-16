@@ -24,6 +24,12 @@ use Excel::Reader::XLSX::Row;
 our @ISA     = qw(Excel::Reader::XLSX::Package::XMLreader);
 our $VERSION = '0.00';
 
+###############################################################################
+#
+# Public and private API methods.
+#
+###############################################################################
+
 
 ###############################################################################
 #
@@ -37,6 +43,8 @@ sub new {
     my $self  = Excel::Reader::XLSX::Package::XMLreader->new();
 
     $self->{_shared_strings}      = shift;
+    $self->{_name}                = shift;
+    $self->{_index}               = shift;
     $self->{_previous_row_number} = -1;
 
     bless $self, $class;
@@ -101,6 +109,27 @@ sub name {
 
     return $self->{_name};
 }
+
+
+###############################################################################
+#
+# index()
+#
+# Return the worksheet index.
+#
+sub index {
+
+    my $self = shift;
+
+    return $self->{_index};
+}
+
+
+###############################################################################
+#
+# Internal methods.
+#
+###############################################################################
 
 
 1;

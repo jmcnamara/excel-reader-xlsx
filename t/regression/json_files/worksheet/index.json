@@ -1,0 +1,11 @@
+{
+   "caption"     : "Test Worksheet::index() method.",
+   "description" : "Test reading worksheet indexes.",
+   "xlsx_file"   : "data01.xlsx",
+   "expected" : [
+      "0",
+      "1",
+      "2",
+      "3"
+   ]
+}

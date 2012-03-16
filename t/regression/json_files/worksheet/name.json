@@ -1,0 +1,11 @@
+{
+   "caption"     : "Test Worksheet::name() method.",
+   "description" : "Test reading worksheet names.",
+   "xlsx_file"   : "data01.xlsx",
+   "expected" : [
+      "Sheet1",
+      "Sheet2",
+      "Sheet3",
+      "Sheet4"
+   ]
+}

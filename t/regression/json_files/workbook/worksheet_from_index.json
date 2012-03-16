@@ -1,0 +1,11 @@
+{
+   "caption"     : "Test Workbook::worksheet_from_index() method.",
+   "description" : "Test getting worksheet objects via an index.",
+   "xlsx_file"   : "data01.xlsx",
+   "expected" : [
+      "Sheet4",
+      "Sheet3",
+      "Sheet1",
+      "Sheet2"
+   ]
+}

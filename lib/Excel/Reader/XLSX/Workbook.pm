@@ -28,6 +28,13 @@ our $VERSION = '0.00';
 
 ###############################################################################
 #
+# Public and private API methods.
+#
+###############################################################################
+
+
+###############################################################################
+#
 # new()
 #
 # Constructor.
@@ -46,6 +53,7 @@ sub new {
     $self->{_files}                = \%files;
     $self->{_worksheets}           = undef;
     $self->{_worksheet_attributes} = [];
+    $self->{_worksheet_indexes}    = {};
 
     # Set the root dir for the workbook and worksheets. Usually 'xl/'.
     $self->{_workbook_root} = $self->{_files}->{_workbook};
@@ -63,7 +71,7 @@ sub new {
 #
 # _set_relationships()
 #
-# Set up the relationship links between files and internal ids.
+# Set up the relationship links between package files and the internal ids.
 #
 sub _set_relationships {
 
@@ -94,7 +102,6 @@ sub _read_node {
     # Only process the start elements.
     return unless $node->nodeType() == XML_READER_TYPE_ELEMENT;
 
-
     if ( $node->name eq 'sheet' ) {
 
         my $name     = $node->getAttribute( 'name' );
@@ -103,11 +110,11 @@ sub _read_node {
 
         my $filename = $self->{_rels}->{$rel_id}->{_target};
 
-
         push @{ $self->{_worksheet_attributes} },
           {
             _name     => $name,
             _sheet_id => $sheet_id,
+            _index    => $sheet_id - 1,
             _rel_id   => $rel_id,
             _filename => $filename,
           };
@@ -132,6 +139,35 @@ sub worksheets {
     return @{ $self->{_worksheets} };
 }
 
+
+###############################################################################
+#
+# worksheet_from_index()
+#
+# Return a Worksheet object based on its index.
+#
+sub worksheet_from_index {
+
+    my $self  = shift;
+    my $index = shift;
+
+    return unless defined $index;
+
+    if ( !defined $self->{_worksheets} ) {
+        $self->_read_worksheets();
+    }
+
+    return $self->{_worksheets}->[$index];
+}
+
+
+###############################################################################
+#
+# Internal methods.
+#
+###############################################################################
+
+
 ###############################################################################
 #
 # _read_worksheets()
@@ -144,21 +180,25 @@ sub _read_worksheets {
 
     return if defined $self->{_worksheets};
 
-    for my $attribute ( @{ $self->{_worksheet_attributes} } ) {
+    for my $sheet_attribute ( @{ $self->{_worksheet_attributes} } ) {
 
-        my $worksheet =
-          Excel::Reader::XLSX::Worksheet->new( $self->{_shared_strings} );
-
-        $worksheet->{_name} = $attribute->{_name};
+        my $worksheet = Excel::Reader::XLSX::Worksheet->new(
+            $self->{_shared_strings},
+            $sheet_attribute->{_name},
+            $sheet_attribute->{_index},
+        );
 
         $worksheet->_read_file(
                 $self->{_package_dir}
               . $self->{_workbook_root}
-              . $attribute->{_filename}
+              . $sheet_attribute->{_filename}
 
         );
 
         push @{ $self->{_worksheets} }, $worksheet;
+
+        # Store the index so it can be looked up by name.
+        $self->{_worksheets_index} = $sheet_attribute->{_name};
     }
 }
 
