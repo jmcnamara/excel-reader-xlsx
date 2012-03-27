@@ -52,8 +52,8 @@ sub new {
     $self->{_shared_strings}       = $shared_strings;
     $self->{_files}                = \%files;
     $self->{_worksheets}           = undef;
-    $self->{_worksheet_attributes} = [];
-    $self->{_worksheet_indexes}    = {};
+    $self->{_worksheet_properties} = [];
+    $self->{_worksheet_indices}    = {};
 
     # Set the root dir for the workbook and worksheets. Usually 'xl/'.
     $self->{_workbook_root} = $self->{_files}->{_workbook};
@@ -71,7 +71,8 @@ sub new {
 #
 # _set_relationships()
 #
-# Set up the relationship links between package files and the internal ids.
+# Set up the Excel relationship links between package files and the
+# internal ids.
 #
 sub _set_relationships {
 
@@ -108,9 +109,11 @@ sub _read_node {
         my $sheet_id = $node->getAttribute( 'sheetId' );
         my $rel_id   = $node->getAttribute( 'r:id' );
 
+        # Use the package relationship data to convert the r:id to a filename.
         my $filename = $self->{_rels}->{$rel_id}->{_target};
 
-        push @{ $self->{_worksheet_attributes} },
+        # Store the properties to set up a Worksheet reader object.
+        push @{ $self->{_worksheet_properties} },
           {
             _name     => $name,
             _sheet_id => $sheet_id,
@@ -132,6 +135,7 @@ sub worksheets {
 
     my $self = shift;
 
+    # Read the worksheet data if it hasn't already been read.
     if ( !defined $self->{_worksheets} ) {
         $self->_read_worksheets();
     }
@@ -142,20 +146,32 @@ sub worksheets {
 
 ###############################################################################
 #
-# worksheet_from_index()
+# worksheet()
 #
-# Return a Worksheet object based on its index.
+# Return a Worksheet object based on its sheetname or index. Unknown sheet-
+# names or out of range indices return an undef object.
 #
-sub worksheet_from_index {
+sub worksheet {
 
     my $self  = shift;
     my $index = shift;
+    my $name  = $index;
 
+    # Ensure some parameter was passed.
     return unless defined $index;
 
+    # Read the worksheet data if it hasn't already been read.
     if ( !defined $self->{_worksheets} ) {
         $self->_read_worksheets();
     }
+
+    # Convert a valid sheetname to an index.
+    if ( exists $self->{_worksheet_indices}->{$name} ) {
+        $index = $self->{_worksheet_indices}->{$name};
+    }
+
+    # Check if it is a valid index.
+    return if $index !~ /^[-\d]+$/;
 
     return $self->{_worksheets}->[$index];
 }
@@ -178,27 +194,32 @@ sub _read_worksheets {
 
     my $self = shift;
 
+    # Return if the worksheet data has already been read.
     return if defined $self->{_worksheets};
 
-    for my $sheet_attribute ( @{ $self->{_worksheet_attributes} } ) {
+    # Iterate through the worksheet properties and set up a Worksheet object.
+    for my $sheet ( @{ $self->{_worksheet_properties} } ) {
 
+        # Create a new Worksheet reader.
         my $worksheet = Excel::Reader::XLSX::Worksheet->new(
             $self->{_shared_strings},
-            $sheet_attribute->{_name},
-            $sheet_attribute->{_index},
+            $sheet->{_name},
+            $sheet->{_index},
         );
 
+        # Set up the file to read. We don't read data until it is required.
         $worksheet->_read_file(
                 $self->{_package_dir}
               . $self->{_workbook_root}
-              . $sheet_attribute->{_filename}
+              . $sheet->{_filename}
 
         );
 
+        # Store the Worksheet reader objects.
         push @{ $self->{_worksheets} }, $worksheet;
 
-        # Store the index so it can be looked up by name.
-        $self->{_worksheets_index} = $sheet_attribute->{_name};
+        # Store the Worksheet index so it can be looked up by name.
+        $self->{_worksheet_indices}->{ $sheet->{_name} } = $sheet->{_index};
     }
 }
 

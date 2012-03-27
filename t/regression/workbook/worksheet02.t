@@ -17,7 +17,7 @@ use Test::More tests => 1;
 #
 # Test setup.
 #
-my $json_filename = 't/regression/json_files/workbook/worksheet_from_index.json';
+my $json_filename = 't/regression/json_files/workbook/worksheet02.json';
 my $json          = _read_json( $json_filename );
 my $caption       = $json->{caption};
 my $expected      = $json->{expected};
@@ -34,15 +34,27 @@ use Excel::Reader::XLSX;
 my $reader   = Excel::Reader::XLSX->new();
 my $workbook = $reader->read_file( $xlsx_file );
 
+# Check for valid sheetnames.
+for my $sheetname qw( Sheet4 Sheet3 Sheet1 Sheet2 ) {
 
-for my $index ( -1, -2, 0, 1 ) {
-
-    my $worksheet = $workbook->worksheet_from_index( $index );
+    my $worksheet = $workbook->worksheet( $sheetname );
 
     my $sheetname = $worksheet->name();
     push @$got, $sheetname;
-
 }
+
+
+# Check for valid sheetnames.
+for my $sheetname qw( sheet1 Sheet5 4 ) {
+
+    my $worksheet = $workbook->worksheet( $sheetname );
+
+    next unless $worksheet;
+
+    my $sheetname = $worksheet->name();
+    push @$got, $sheetname;
+}
+
 
 
 # Test the results.

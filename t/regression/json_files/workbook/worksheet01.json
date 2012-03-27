@@ -1,5 +1,5 @@
 {
-   "caption"     : "Test Workbook::worksheet_from_index() method.",
+   "caption"     : "Test Workbook::worksheet() method.",
    "description" : "Test getting worksheet objects via an index.",
    "xlsx_file"   : "data01.xlsx",
    "expected" : [
