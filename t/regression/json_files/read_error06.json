@@ -4,6 +4,6 @@
    "xlsx_file"   : "error06.xlsx",
    "expected" : {
       "error_code" : 6,
-      "error_text" : "File missing subfile: docProps/core.xml"
+      "error_text" : "File is missing subfile: docProps/core.xml"
    }
 }
