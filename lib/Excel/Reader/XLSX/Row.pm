@@ -49,11 +49,8 @@ sub new {
 
     # TODO. Make the cell initialisation a lazy load.
     # Read the child cell nodes.
-    my $row_node   = $self->{_reader}->copyCurrentNode( 1 );
-    my @cell_nodes = $row_node->childNodes();
-
-    # Make sure we only have cell nodes.
-    @cell_nodes = grep { $_->nodeName() eq 'c' } @cell_nodes;
+    my $row_node   = $self->{_reader}->copyCurrentNode( $FULL_DEPTH );
+    my @cell_nodes = $row_node->getChildrenByTagName( 'c' );
 
     $self->{_cells}           = \@cell_nodes;
     $self->{_max_cell_index}  = scalar @cell_nodes;
@@ -81,7 +78,7 @@ sub next_cell {
 
     return if $self->{_next_cell_index} >= $self->{_max_cell_index};
 
-    my $cell_node = $self->{_cells}->[$self->{_next_cell_index}];
+    my $cell_node = $self->{_cells}->[ $self->{_next_cell_index} ];
 
 
     my $range = $cell_node->getAttribute( 'r' );
@@ -94,24 +91,27 @@ sub next_cell {
     ( $cell->{_row}, $cell->{_col} ) = _range_to_rowcol( $range );
 
 
-    my $type = $cell_node->getAttribute( 't' ) || '';
+    my $type = $cell_node->getAttribute( 't' );
 
-    $cell->{_type} = $type;
-
+    $cell->{_type} = $type || '';
 
 
     # Read the cell <c> child nodes.
     for my $child_node ( $cell_node->childNodes() ) {
 
-        if ( $child_node->nodeName() eq 'v' ) {
+        my $node_name = $child_node->nodeName();
+
+
+        if ( $node_name eq 'v' ) {
             $cell->{_value}     = $child_node->textContent();
             $cell->{_has_value} = 1;
         }
-        if ( $child_node->nodeName() eq 'is' ) {
+
+        if ( $node_name eq 'is' ) {
             $cell->{_value}     = $child_node->textContent();
             $cell->{_has_value} = 1;
         }
-        elsif ( $child_node->nodeName() eq 'f' ) {
+        elsif ( $node_name eq 'f' ) {
             $cell->{_formula}     = $child_node->textContent();
             $cell->{_has_formula} = 1;
         }
