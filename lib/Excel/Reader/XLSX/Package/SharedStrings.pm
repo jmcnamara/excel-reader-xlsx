@@ -51,49 +51,33 @@ sub new {
 
 ##############################################################################
 #
-# _read_node()
+# _read_all_nodes()
 #
-# Callback function to read the nodes of the <sst> shared string table data.
+# Override callback function. TODO rename.
 #
-sub _read_node {
+sub _read_all_nodes {
 
     my $self = shift;
-    my $node = shift;
-
-    # Only process the start elements.
-    return unless $node->nodeType() == XML_READER_TYPE_ELEMENT;
+    my $reader = $self->{_reader};
 
     # Read the "shared string table" <sst> element for the count attributes.
-    if ( $node->name() eq 'sst' ) {
-        $self->{_count}        = $node->getAttribute( 'count' );
-        $self->{_unique_count} = $node->getAttribute( 'uniqueCount' );
+    if ( $reader->nextElement( 'sst' ) ) {
+        $self->{_count}        = $reader->getAttribute( 'count' );
+        $self->{_unique_count} = $reader->getAttribute( 'uniqueCount' );
     }
 
     # Read the "string item" <si> elements.
-    if ( $node->name() eq 'si' ) {
+    while ( $reader->nextElement( 'si' )  ) {
 
-        my $string_node = $node->copyCurrentNode( $FULL_DEPTH );
+        my $string_node = $reader->copyCurrentNode( 1 );
 
-        # Read the <si> child nodes.
-        for my $text_node ( $string_node->childNodes() ) {
+        my $text = $string_node->textContent();
 
-            if ( $text_node->nodeName() eq 't' ) {
+        push @{ $self->{_strings} }, $text;
 
-                # Read a plain text node.
-                push @{ $self->{_strings} }, $text_node->textContent();
-                last;
-            }
-            elsif ( $text_node->nodeName() eq 'r' ) {
 
-                # Read a plain rich text node.
-                my ( $string, $rich_string ) =
-                  _read_rich_string( $self, $string_node );
-
-                push @{ $self->{_strings} },
-                  [ $RICH_STRING, $string, $rich_string ];
-                last;
-            }
-        }
+       #    push @{ $self->{_strings} },
+       #      [ $RICH_STRING, $string, $rich_string ];
     }
 }
 
