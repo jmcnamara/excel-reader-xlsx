@@ -46,6 +46,20 @@ sub new {
     $self->{_end_of_row}          = 0;
     $self->{_values}              = undef;
 
+
+    # TODO. Make the cell initialisation a lazy load.
+    # Read the child cell nodes.
+    my $row_node   = $self->{_reader}->copyCurrentNode( 1 );
+    my @cell_nodes = $row_node->childNodes();
+
+    # Make sure we only have cell nodes.
+    @cell_nodes = grep { $_->nodeName() eq 'c' } @cell_nodes;
+
+    $self->{_cells}           = \@cell_nodes;
+    $self->{_max_cell_index}  = scalar @cell_nodes;
+    $self->{_next_cell_index} = 0;
+
+
     bless $self, $class;
 
     return $self;
@@ -62,33 +76,15 @@ sub next_cell {
 
     my $self = shift;
     my $cell;
-    my $node;
-    my $cell_start = 0;
 
     return if $self->{_row_is_empty};
-    return if $self->{_end_of_row};
+
+    return if $self->{_next_cell_index} >= $self->{_max_cell_index};
+
+    my $cell_node = $self->{_cells}->[$self->{_next_cell_index}];
 
 
-    while ( !$cell_start ) {
-
-        return if !$self->{_reader}->read();
-        $node = $self->{_reader};
-
-        if (   $node->name() eq 'c'
-            && $node->nodeType() == XML_READER_TYPE_ELEMENT )
-        {
-            $cell_start = 1;
-            last;
-        }
-
-        if ( $node->name eq 'row' ) {
-            $self->{_end_of_row} = 1;
-            return;
-        }
-    }
-
-
-    my $range = $node->getAttribute( 'r' );
+    my $range = $cell_node->getAttribute( 'r' );
     return unless $range;
 
     # Create a cell object.
@@ -98,12 +94,10 @@ sub next_cell {
     ( $cell->{_row}, $cell->{_col} ) = _range_to_rowcol( $range );
 
 
-    my $type = $node->getAttribute( 't' ) || '';
+    my $type = $cell_node->getAttribute( 't' ) || '';
 
     $cell->{_type} = $type;
 
-
-    my $cell_node = $node->copyCurrentNode( $FULL_DEPTH );
 
 
     # Read the cell <c> child nodes.
@@ -123,7 +117,7 @@ sub next_cell {
         }
     }
 
-
+    $self->{_next_cell_index}++;
     return $cell;
 }
 
