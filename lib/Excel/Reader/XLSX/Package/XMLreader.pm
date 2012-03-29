@@ -53,7 +53,10 @@ sub _read_file {
     my $self     = shift;
     my $filename = shift;
 
-    my $xml_reader = XML::LibXML::Reader->new( location => $filename );
+    my $xml_reader = XML::LibXML::Reader->new(
+        location  => $filename,
+        no_blanks => 1
+    );
 
     $self->{_reader} = $xml_reader;
 
@@ -73,7 +76,10 @@ sub _read_string {
     my $self   = shift;
     my $string = shift;
 
-    my $xml_reader = XML::LibXML::Reader->new( string => $string );
+    my $xml_reader = XML::LibXML::Reader->new(
+        string    => $string,
+        no_blanks => 1
+    );
 
     $self->{_reader} = $xml_reader;
 
@@ -93,7 +99,10 @@ sub _read_filehandle {
     my $self       = shift;
     my $filehandle = shift;
 
-    my $xml_reader = XML::LibXML::Reader->new( IO => $filehandle );
+    my $xml_reader = XML::LibXML::Reader->new(
+        IO        => $filehandle,
+        no_blanks => 1
+    );
 
     $self->{_reader} = $xml_reader;
 
