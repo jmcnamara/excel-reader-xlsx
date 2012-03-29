@@ -205,7 +205,7 @@ sub _range_to_rowcol {
 
     my $range = shift;
 
-    $range =~ /([A-Z]{1,3})(\d+)/;
+    $range =~ /^([A-Z]{1,3})(\d+)$/;
 
     my $col = $1;
     my $row = $2;
