@@ -64,34 +64,33 @@ sub next_row {
     my $self = shift;
     my $row  = undef;
 
-    my $has_row = $self->{_reader}->nextElement( 'row' );
+    # Read the next "row" element in the file.
+    return unless $self->{_reader}->nextElement( 'row' );
 
-    if ( $has_row ) {
+    # Read the row attributes.
+    my $row_reader = $self->{_reader};
+    my $row_number = $row_reader->getAttribute( 'r' );
 
-        my $node = $self->{_reader};
-        my $row_number = $node->getAttribute( 'r' );
-
-        if ( defined $row_number ) {
-
-            # Convert to zero indexed value.
-            $row_number--;
-        }
-        else {
-
-            # If no 'r' attribute assume it is one more than the previous.
-            $row_number = $self->{_previous_row_number} + 1;
-        }
-
-        $row = Excel::Reader::XLSX::Row->new(
-
-            $self->{_reader},
-            $self->{_shared_strings},
-            $row_number,
-            $self->{_previous_row_number},
-        );
-
-        $self->{_previous_row_number} = $row_number;
+    # Zero index the row number.
+    if ( defined $row_number ) {
+        $row_number--;
     }
+    else {
+
+        # If no 'r' attribute assume it is one more than the previous.
+        $row_number = $self->{_previous_row_number} + 1;
+    }
+
+    # Create a Row reader object
+    $row = Excel::Reader::XLSX::Row->new(
+
+        $self->{_reader},
+        $self->{_shared_strings},
+        $row_number,
+        $self->{_previous_row_number},
+    );
+
+    $self->{_previous_row_number} = $row_number;
 
     return $row;
 }
