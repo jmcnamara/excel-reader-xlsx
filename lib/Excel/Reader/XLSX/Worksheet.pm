@@ -55,6 +55,31 @@ sub new {
 
 ###############################################################################
 #
+# _init_row()
+#
+# TODO.
+#
+sub _init_row {
+
+    my $self = shift;
+
+    # Store reusable Cell object to avoid repeated calls to Cell::new().
+    $self->{_cell} = Excel::Reader::XLSX::Cell->new( $self->{_shared_strings} );
+
+    # Store reusable Row object to avoid repeated calls to Row::new().
+    $self->{_row}       = Excel::Reader::XLSX::Row->new(
+        $self->{_reader},
+        $self->{_shared_strings},
+        $self->{_cell},
+
+    );
+
+    $self->{_row_initialised} = 1;
+}
+
+
+###############################################################################
+#
 # next_row()
 #
 # Read the next available row in the worksheet.
@@ -81,14 +106,14 @@ sub next_row {
         $row_number = $self->{_previous_row_number} + 1;
     }
 
-    # Create a Row reader object
-    $row = Excel::Reader::XLSX::Row->new(
 
-        $self->{_reader},
-        $self->{_shared_strings},
-        $row_number,
-        $self->{_previous_row_number},
-    );
+    if ( !$self->{_row_initialised} ) {
+        $self->_init_row();
+    }
+
+    $row = $self->{_row};
+    $row->_init( $row_number, $self->{_previous_row_number}, );
+
 
     $self->{_previous_row_number} = $row_number;
 

@@ -38,17 +38,30 @@ sub new {
     my $class = shift;
     my $self  = Excel::Reader::XLSX::Package::XMLreader->new();
 
-    $self->{_reader}              = shift;
-    $self->{_shared_strings}      = shift;
+    $self->{_reader}         = shift;
+    $self->{_shared_strings} = shift;
+    $self->{_cell}           = shift;
+
+    bless $self, $class;
+
+    return $self;
+}
+
+
+###############################################################################
+#
+# _init()
+#
+# TODO.
+#
+sub _init {
+
+    my $self = shift;
+
     $self->{_row_number}          = shift;
     $self->{_previous_row_number} = shift;
     $self->{_row_is_empty}        = $self->{_reader}->isEmptyElement();
-    $self->{_end_of_row}          = 0;
     $self->{_values}              = undef;
-
-    # Store reusable Cell object to avoid repeated calls to Cell::new().
-    $self->{_cell} = Excel::Reader::XLSX::Cell->new( $self->{_shared_strings} );
-    $self->{_reuse_cell} = 1;
 
     # TODO. Make the cell initialisation a lazy load.
     # Read the child cell nodes.
@@ -58,11 +71,6 @@ sub new {
     $self->{_cells}           = \@cell_nodes;
     $self->{_max_cell_index}  = scalar @cell_nodes;
     $self->{_next_cell_index} = 0;
-
-
-    bless $self, $class;
-
-    return $self;
 }
 
 
@@ -88,13 +96,8 @@ sub next_cell {
     return unless $range;
 
     # Create or re-use (for efficiency) a Cell object.
-    if ($self->{_reuse_cell}) {
-        $cell = $self->{_cell};
-        $cell->_init();
-    }
-    else {
-        $cell = Excel::Reader::XLSX::Cell->new( $self->{_shared_strings} );
-    }
+    $cell = $self->{_cell};
+    $cell->_init();
 
 
     ( $cell->{_row}, $cell->{_col} ) = _range_to_rowcol( $range );
