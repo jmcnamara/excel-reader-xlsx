@@ -46,6 +46,9 @@ sub new {
     $self->{_end_of_row}          = 0;
     $self->{_values}              = undef;
 
+    # Store reusable Cell object to avoid repeated calls to Cell::new().
+    $self->{_cell} = Excel::Reader::XLSX::Cell->new( $self->{_shared_strings} );
+    $self->{_reuse_cell} = 1;
 
     # TODO. Make the cell initialisation a lazy load.
     # Read the child cell nodes.
@@ -84,8 +87,14 @@ sub next_cell {
     my $range = $cell_node->getAttribute( 'r' );
     return unless $range;
 
-    # Create a cell object.
-    $cell = Excel::Reader::XLSX::Cell->new( $self->{_shared_strings} );
+    # Create or re-use (for efficiency) a Cell object.
+    if ($self->{_reuse_cell}) {
+        $cell = $self->{_cell};
+        $cell->_init();
+    }
+    else {
+        $cell = Excel::Reader::XLSX::Cell->new( $self->{_shared_strings} );
+    }
 
 
     ( $cell->{_row}, $cell->{_col} ) = _range_to_rowcol( $range );
