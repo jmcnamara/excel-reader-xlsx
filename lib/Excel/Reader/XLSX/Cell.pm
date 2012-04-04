@@ -55,7 +55,6 @@ sub _init {
     my $self = shift;
 
     $self->{_value}            = '';
-    $self->{_value}            = '';
     $self->{_converted_string} = 0;
     $self->{_has_formula}      = 0;
 }

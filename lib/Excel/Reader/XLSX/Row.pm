@@ -207,11 +207,6 @@ sub previous_number {
 # Internal methods.
 #
 
-
-my %col_index;
-
-@col_index{ 'A' .. 'Z'} = ( 1 .. 26 );
-
 ###############################################################################
 #
 # _range_to_rowcol($range)
@@ -220,30 +215,29 @@ my %col_index;
 #
 sub _range_to_rowcol {
 
-#     shift =~ /^([A-Z]{1,3})(\d+)$/;
+    my ( $col, $row ) = split /(\d+)/, shift;
 
-#     my $col = $1;
-#     my $row = $2;
+    $row--;
 
+    my $length = length $col;
 
-    my ($col, $row ) = split /(\d+)/, shift;
-
-    my @chars = split //, $col;
-
-    if ( @chars == 1 ) {
-        $col = $col_index{ $chars[0] };
+    if ( $length == 1 ) {
+        $col = -65 + ord( $col );
     }
-    elsif ( @chars == 2 ) {
-        $col = $col_index{ $chars[0] } + 26 * $col_index{ $chars[1] };
+    elsif ( $length == 2 ) {
+        my @chars = split //, $col;
+        $col = -1729 + ord( $chars[1] ) + 26 * ord( $chars[0] );
     }
     else {
+        my @chars = split //, $col;
         $col =
-          $col_index{ $chars[0] } +
-          26 * $col_index{ $chars[1] } +
-          676 * $col_index{ $chars[2] };
+          -44_993 +
+          ord( $chars[2] ) +
+          26 * ord( $chars[1] ) +
+          676 * ord( $chars[0] );
     }
 
-    return $row - 1, $col - 1;
+    return $row, $col;
 }
 
 
