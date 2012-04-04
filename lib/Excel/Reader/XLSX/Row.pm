@@ -207,6 +207,11 @@ sub previous_number {
 # Internal methods.
 #
 
+
+my %col_index;
+
+@col_index{ 'A' .. 'Z'} = ( 1 .. 26 );
+
 ###############################################################################
 #
 # _range_to_rowcol($range)
@@ -215,29 +220,30 @@ sub previous_number {
 #
 sub _range_to_rowcol {
 
-    my $range = shift;
+#     shift =~ /^([A-Z]{1,3})(\d+)$/;
 
-    $range =~ /^([A-Z]{1,3})(\d+)$/;
+#     my $col = $1;
+#     my $row = $2;
 
-    my $col = $1;
-    my $row = $2;
 
-    # Convert base26 column string to number.
+    my ($col, $row ) = split /(\d+)/, shift;
+
     my @chars = split //, $col;
-    my $exponent = 0;
-    $col = 0;
 
-    while ( @chars ) {
-        my $char = pop @chars;    # LS char first
-        $col += ( ord( $char ) - ord( 'A' ) + 1 ) * ( 26**$exponent );
-        $exponent++;
+    if ( @chars == 1 ) {
+        $col = $col_index{ $chars[0] };
+    }
+    elsif ( @chars == 2 ) {
+        $col = $col_index{ $chars[0] } + 26 * $col_index{ $chars[1] };
+    }
+    else {
+        $col =
+          $col_index{ $chars[0] } +
+          26 * $col_index{ $chars[1] } +
+          676 * $col_index{ $chars[2] };
     }
 
-    # Convert 1-index to zero-index
-    $row--;
-    $col--;
-
-    return $row, $col;
+    return $row - 1, $col - 1;
 }
 
 
