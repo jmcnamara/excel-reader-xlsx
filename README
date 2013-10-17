@@ -1,3 +1,13 @@
+Note:
+
+This project isn't effectively abandoned. I don't have the required time
+or interest to finish it off or get it to CPAN quality.
+
+It is functional and if it meets your requirements then please use it but
+it is unlikely that it will ever be extended.
+
+
+
 NAME
 
     Excel::Reader::XLSX - Read data from an Excel 2007+/XLSX format file.
