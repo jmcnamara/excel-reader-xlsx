@@ -6,6 +6,8 @@ to finish it off and get it to CPAN quality.
 It is functional and if it meets your requirements then please use it but
 it is unlikely that it will ever be extended.
 
+As an alternative have a look at the [Spreadsheet::ParseXLSX](http://search.cpan.org/~doy/Spreadsheet-ParseXLSX/lib/Spreadsheet/ParseXLSX.pm)
+module which is on CPAN.
 
 
 NAME
