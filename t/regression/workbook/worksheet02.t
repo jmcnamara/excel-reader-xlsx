@@ -39,8 +39,7 @@ for my $sheetname qw( Sheet4 Sheet3 Sheet1 Sheet2 ) {
 
     my $worksheet = $workbook->worksheet( $sheetname );
 
-    my $sheetname = $worksheet->name();
-    push @$got, $sheetname;
+      push @$got, $worksheet->name();
 }
 
 
