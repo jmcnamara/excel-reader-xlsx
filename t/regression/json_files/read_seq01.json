@@ -1,0 +1,53 @@
+{
+   "caption"     : "Test reading data in sequential mode.",
+   "description" : "Test the reading data in sequential rather than sparse mode.",
+   "xlsx_file"   : "data02.xlsx",
+   "expected" : {
+      "Sheet1" : [
+         [
+         ],
+         [
+            "aaa",
+            "bbb",
+            "",
+            "ddd",
+            "",
+            "",
+            "ggg"
+         ],
+         [
+            "",
+            "",
+            "",
+            "1",
+            "2",
+            "",
+            "",
+            "4"
+         ],
+         [
+         ],
+         [
+            "1"
+         ],
+         [
+         ],
+         [
+            ""
+         ],
+         [
+            "aaa",
+            "bbb",
+            "ccc"
+         ],
+         [
+            "7"
+         ],
+         [
+         ],
+         [
+            "2"
+         ]
+      ]
+   }
+}

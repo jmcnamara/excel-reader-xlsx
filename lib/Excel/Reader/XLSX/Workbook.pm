@@ -44,6 +44,7 @@ sub new {
     my $class          = shift;
     my $package_dir    = shift;
     my $shared_strings = shift;
+    my $sparse         = shift;
     my %files          = @_;
 
     my $self = Excel::Reader::XLSX::Package::XMLreader->new();
@@ -54,6 +55,7 @@ sub new {
     $self->{_worksheets}           = undef;
     $self->{_worksheet_properties} = [];
     $self->{_worksheet_indices}    = {};
+    $self->{_sparse}               = $sparse;
 
     # Set the root dir for the workbook and worksheets. Usually 'xl/'.
     $self->{_workbook_root} = $self->{_files}->{_workbook};
@@ -203,6 +205,7 @@ sub _read_worksheets {
         # Create a new Worksheet reader.
         my $worksheet = Excel::Reader::XLSX::Worksheet->new(
             $self->{_shared_strings},
+            $self->{_sparse},
             $sheet->{_name},
             $sheet->{_index},
         );

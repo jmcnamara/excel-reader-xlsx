@@ -43,6 +43,7 @@ sub new {
     my $self  = Excel::Reader::XLSX::Package::XMLreader->new();
 
     $self->{_shared_strings}      = shift;
+    $self->{_sparse}              = shift;
     $self->{_name}                = shift;
     $self->{_index}               = shift;
     $self->{_previous_row_number} = -1;
@@ -71,7 +72,7 @@ sub _init_row {
         $self->{_reader},
         $self->{_shared_strings},
         $self->{_cell},
-
+        $self->{_sparse},
     );
 
     $self->{_row_initialised} = 1;

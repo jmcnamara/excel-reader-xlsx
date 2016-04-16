@@ -41,10 +41,30 @@ sub new {
     $self->{_reader}         = shift;
     $self->{_shared_strings} = shift;
     $self->{_cell}           = shift;
-
+    $self->{_sparse}         = shift;
     bless $self, $class;
 
     return $self;
+}
+
+
+###############################################################################
+#
+# _init_seq()
+#
+# TODO.
+#
+sub _init_seq {
+
+    my $self = shift;
+
+    $self->{_row_number}          = shift;
+    $self->{_previous_row_number} = shift;
+    $self->{_row_is_empty}        = 1;
+    $self->{_values}              = ();
+    $self->{_cells}               = [];
+    $self->{_max_cell_index}      = 0;
+    $self->{_next_cell_index}     = 0;
 }
 
 

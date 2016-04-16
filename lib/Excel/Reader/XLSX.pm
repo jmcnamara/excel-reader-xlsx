@@ -60,13 +60,21 @@ sub new {
 
     my $class = shift;
 
+    my %params = @_;
+
     my $self = {
         _reader           => undef,
         _files            => {},
         _tempdir          => undef,
         _error_status     => 0,
         _error_extra_text => '',
+        _sparse           => 1,
     };
+
+    if ($params{sequential}) {
+        $self->{_sparse} = 0;
+    }
+
 
     bless $self, $class;
 
@@ -172,6 +180,7 @@ sub read_file {
     my $workbook = Excel::Reader::XLSX::Workbook->new(
         $tempdir,
         $shared_strings,
+        $self->{_sparse},
         %files
 
     );
