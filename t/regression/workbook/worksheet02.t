@@ -35,24 +35,22 @@ my $reader   = Excel::Reader::XLSX->new();
 my $workbook = $reader->read_file( $xlsx_file );
 
 # Check for valid sheetnames.
-for my $sheetname qw( Sheet4 Sheet3 Sheet1 Sheet2 ) {
+for my $sheetname ( qw/Sheet4 Sheet3 Sheet1 Sheet2/ ) {
 
     my $worksheet = $workbook->worksheet( $sheetname );
 
-    my $sheetname = $worksheet->name();
-    push @$got, $sheetname;
+    push @$got, $worksheet->name();
 }
 
 
 # Check for valid sheetnames.
-for my $sheetname qw( sheet1 Sheet5 4 ) {
+for my $sheetname ( qw/sheet1 Sheet5 4/ ) {
 
     my $worksheet = $workbook->worksheet( $sheetname );
 
     next unless $worksheet;
 
-    my $sheetname = $worksheet->name();
-    push @$got, $sheetname;
+    push @$got, $worksheet->name();
 }
 
 
